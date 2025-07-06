@@ -10,7 +10,7 @@ Once a project is Proxyloaded, code is consumed via a recursive proxy object as 
 
 ```tsx
 // src/Component/Landing/default/index.tsx
-import { React, Component } from './@harness';
+import { Component } from '@proxyloaded';
 
 const Landing = () => {
   return (
@@ -46,7 +46,7 @@ It starts with conventions. This repository provides tools for maintaining Proxy
 The Arbiter standard enforces a clear 4-level structure inside your `src/` folder:
 
 ```
-/src
+/proxied                 # you can specified this whereever you'd like
   /[TYPE]                # High-level category (e.g. 'api', 'Component', 'task')
     /[NAME]              # Specific item within the category (e.g. 'checkout', 'logger')
       interface.ts       # Defines Params, Returns, and Interface
@@ -57,7 +57,7 @@ The Arbiter standard enforces a clear 4-level structure inside your `src/` folde
 > 🧠 **Example:**
 >
 > ```
-> /src
+> /proxied
 >   /Component
 >     /Button
 >       interface.ts    # MUST include an interface definition
@@ -156,3 +156,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 For detailed documentation on the load utility, see [src/load/README.md](src/load/README.md).
 
 The load utility creates a nested proxy structure for dynamically loading and executing code based on type and name hierarchies. It's the core mechanism that enables Proxyload's runtime code loading capabilities.
+
+# Aggregate

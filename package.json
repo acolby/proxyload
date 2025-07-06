@@ -40,11 +40,9 @@
   ],
   "author": "acolby",
   "license": "MIT",
-  "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0"
-  },
   "devDependencies": {
     "@types/node": "^24.0.10",
+    "@types/react": "^19.1.8",
     "esbuild": "^0.25.5",
     "tsc": "^2.0.4",
     "tsx": "^4.19.4",

@@ -23,7 +23,7 @@ export default async function aggregate(params: {
     });
 
     fs.writeFileSync(
-      path.resolve(__dirname, `../src/${type}/index.ts`),
+      path.resolve(`${dir}/${type}/index.ts`),
       _aggregateItems({
         type,
         items,
