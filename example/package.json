@@ -1,0 +1,11 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "aggreage": "tsx ./scripts/aggreage.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
