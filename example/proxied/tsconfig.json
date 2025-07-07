@@ -14,7 +14,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@proxyload": ["index.ts"]
+      "@proxied": ["index.ts"]
     }
   },
   "include": ["./**/*"]

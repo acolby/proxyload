@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "aggregate": "tsx ./scripts/aggregate.ts"
+    "aggregate": "tsx ./scripts/aggregate.ts",
+    "build": "tsx ./scripts/build.ts"
   },
   "author": "",
   "license": "ISC",

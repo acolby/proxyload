@@ -2,9 +2,3 @@
 
 export { Button } from "./Button";
 export { EmailForm } from "./EmailForm";
-
-export const entries = [
-  '/Button/default',
-  '/Button/secondary',
-  '/EmailForm/default',
-] as const;

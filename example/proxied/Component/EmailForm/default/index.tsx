@@ -1,5 +1,4 @@
-import React from "react";
-import { Component } from "../../..";
+import { Component } from "@proxied";
 import type { Interface } from "../interface";
 
 const EmailForm: Interface = (props) => {
