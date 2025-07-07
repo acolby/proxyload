@@ -1,5 +1,6 @@
 import { Component } from "@proxied";
 import type { Interface } from "../interface";
+import { Name } from "./comp";
 
 const EmailForm: Interface = (props) => {
   return (
@@ -8,6 +9,7 @@ const EmailForm: Interface = (props) => {
         type="email"
         name="email"
       />
+      <Name name="John" />
       <Component.Button
         text="Submit"
         onClick={() => {
