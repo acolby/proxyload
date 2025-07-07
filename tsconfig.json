@@ -9,10 +9,7 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "paths": {
-      "@proxied/*": ["./example/proxied/*"]
-    }
+    "strict": true
   },
   "include": ["src"]
 }

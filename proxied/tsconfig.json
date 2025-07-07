@@ -1,21 +1,20 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "../dist",
     "module": "ESNext",
     "target": "ESNext",
     "declaration": true,
-    "declarationDir": "./dist",
+    "declarationDir": "../dist",
     "esModuleInterop": true,
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./*"],
-      "@proxied": ["index.ts"]
+      "@proxied": ["./src/index.ts"]
     }
   },
-  "include": ["./**/*"]
+  "include": ["./**/*", "../scripts", "../dist"]
 }
