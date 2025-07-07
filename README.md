@@ -157,8 +157,8 @@ For detailed documentation on the load utility, see [src/load/README.md](src/loa
 
 The load utility creates a nested proxy structure for dynamically loading and executing code based on type and name hierarchies. It's the core mechanism that enables Proxyload's runtime code loading capabilities.
 
-# Aggregate Utility
+# Barrel Utility
 
-For detailed documentation on the aggregate utility, see [src/aggregate/Readme.md](src/aggregate/Readme.md).
+For detailed documentation on the barrel utility, see [src/barrel/Readme.md](src/barrel/Readme.md).
 
-The aggregate utility automatically generates TypeScript files that create type-safe, variation-aware interfaces for your proxied code structure. It scans your proxied directory and generates variation selectors, type definitions, and barrel export files to maintain consistency and reduce boilerplate.
+The barrel utility automatically generates TypeScript files that create type-safe, variation-aware interfaces for your proxied code structure. It scans your proxied directory and generates variation selectors, type definitions, and barrel export files to maintain consistency and reduce boilerplate.
