@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export default async function aggregate(params: {
+export default async function barrel(params: {
   exclude: string[];
   dir: string;
 }) {

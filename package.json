@@ -9,13 +9,9 @@
     "dist"
   ],
   "exports": {
-    "./aggregate": {
-      "import": "./dist/aggregate/index.js",
-      "types": "./dist/aggregate/index.d.ts"
-    },
-    "./load": {
-      "import": "./dist/load/index.js",
-      "types": "./dist/load/index.d.ts"
+    "./barrel": {
+      "import": "./dist/barrel/index.js",
+      "types": "./dist/barrel/index.d.ts"
     }
   },
   "repository": {

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "aggregate": "tsx ./scripts/aggregate.ts",
+    "barrel": "tsx ./scripts/barrel.ts",
     "build": "tsx ./scripts/build.ts"
   },
   "author": "",
