@@ -1,7 +1,7 @@
 import build from "../../src/build";
 
 build({
-  dir: `${__dirname}/../proxied`,
+  dir: `${__dirname}/../src`,
   dist: `${__dirname}/../dist`,
   globals: {
     "@proxied": "_PROXIED_",
