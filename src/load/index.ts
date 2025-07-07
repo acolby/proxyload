@@ -12,15 +12,10 @@ export default function load<T>(params: {
     variation?: string;
   }) => string;
 }) {
-  const { host, loaders, globals, references, getVersion } = params;
+  const { host, loaders, references, getVersion } = params;
 
-  const globalharnessreference = references?.harness || "_PL_";
   const globalitemsreference = references?.items || "_PL_ITEMS_";
 
-  // @ts-ignore
-  globalThis[globalharnessreference] = {
-    ...globals,
-  };
   // Feds is a nested proxy where the first level is the type and the second level is the name
   const Feds = new Proxy(
     {},

@@ -157,6 +157,12 @@ For detailed documentation on the load utility, see [src/load/README.md](src/loa
 
 The load utility creates a nested proxy structure for dynamically loading and executing code based on type and name hierarchies. It's the core mechanism that enables Proxyload's runtime code loading capabilities.
 
+# Build Utility
+
+For detailed documentation on the build utility, see [src/build/README.md](src/build/README.md).
+
+The build utility compiles your proxied code structure into individual JavaScript files that can be dynamically loaded at runtime. It uses esbuild under the hood and supports custom plugins and configuration options.
+
 # Barrel Utility
 
 For detailed documentation on the barrel utility, see [src/barrel/Readme.md](src/barrel/Readme.md).

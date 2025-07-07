@@ -12,6 +12,14 @@
     "./barrel": {
       "import": "./dist/barrel/index.js",
       "types": "./dist/barrel/index.d.ts"
+    },
+    "./build": {
+      "import": "./dist/build/index.js",
+      "types": "./dist/build/index.d.ts"
+    },
+    "./load": {
+      "import": "./dist/load/index.js",
+      "types": "./dist/load/index.d.ts"
     }
   },
   "repository": {

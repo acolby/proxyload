@@ -1,16 +1,44 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { build as esbuild } from "esbuild";
+import { build as esbuild, Plugin, BuildOptions } from "esbuild";
 
-export default async function build(params: {
+export interface BuildParams {
   dir: string;
   dist: string;
   globals: Record<string, string>;
-}) {
+  plugins?: Plugin[];
+  esbuildOptions?: Partial<BuildOptions>;
+  version?: string;
+  minify?: boolean;
+}
+
+/**
+ * Example usage:
+ *
+ * ```typescript
+ * import build from './build';
+ * import { cssModulesPlugin } from 'esbuild-css-modules-plugin';
+ *
+ * await build({
+ *   dir: './src',
+ *   dist: './dist',
+ *   globals: { 'react': 'React' },
+ *   plugins: [cssModulesPlugin()],
+ *   esbuildOptions: {
+ *     target: 'es2020',
+ *     sourcemap: true,
+ *   },
+ *   minify: true,
+ *   version: 'v1.0.0'
+ * });
+ * ```
+ */
+
+export default async function build(params: BuildParams) {
   const entryPoints = await _getEntryPoints(params);
 
-  const version = "latest";
+  const version = params.version || "latest";
 
   for (const entryPoint of entryPoints) {
     const result = await esbuild({
@@ -26,9 +54,21 @@ export default async function build(params: {
       external: Object.keys(params.globals),
 
       // @TODO: minify
-      minify: false,
+      minify: params.minify ?? false,
       write: false,
+
+      // Allow custom esbuild options to override defaults
+      ...params.esbuildOptions,
+
+      // Allow custom plugins
+      plugins: params.plugins || [],
     });
+
+    if (!result.outputFiles || result.outputFiles.length === 0) {
+      throw new Error(
+        `No output files generated for entry point: ${entryPoint}`
+      );
+    }
 
     let code = result.outputFiles[0].text;
 
@@ -53,7 +93,7 @@ export default async function build(params: {
   }
 }
 
-async function _getEntryPoints(params: { dir: string }) {
+async function _getEntryPoints(params: Pick<BuildParams, "dir">) {
   // find dir names in dir
   const typeNames = fs
     .readdirSync(params.dir)
