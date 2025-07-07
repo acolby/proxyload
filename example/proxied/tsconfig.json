@@ -11,9 +11,10 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "jsx": "react-jsx",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@proxyloaded": ["./proxyloaded.ts"]
+      "@proxyload": ["index.ts"]
     }
   },
   "include": ["./**/*"]

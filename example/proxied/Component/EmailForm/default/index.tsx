@@ -1,5 +1,5 @@
 import React from "react";
-import { Component } from "../../../proxyloaded";
+import { Component } from "../../..";
 import type { Interface } from "../interface";
 
 const EmailForm: Interface = (props) => {

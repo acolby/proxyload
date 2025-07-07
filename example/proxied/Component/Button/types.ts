@@ -1,0 +1,9 @@
+
+  import type { Params, Returns } from "./interface";
+
+  type Variations = "default" | "secondary";
+
+  export type Component_Button = (
+    props: Params & { variation?: Variations; version?: string }
+  ) => Returns;
+  

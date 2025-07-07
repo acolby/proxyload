@@ -1,7 +1,6 @@
-import React from "react";
-import type { Params } from "../interface";
+import type { Interface } from "../interface";
 
-const Button = ({ text, onClick }: Params) => {
+const Button: Interface = ({ text, onClick }) => {
   return <button onClick={onClick}>{text}</button>;
 };
 
