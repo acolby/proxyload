@@ -30,11 +30,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/acolby/proxyload.git"
+    "url": "git+https://github.com/acolby/proxyload.git"
   },
   "scripts": {
     "build": "tsx ./scripts/build.js && tsc -p tsconfig.json",
-    "prepublishOnly": "rm -rf dist && tsc"
+    "prepublishOnly": "rm -rf dist && tsc",
+    "publish": "npm publish"
   },
   "keywords": [
     "TypeScript",
