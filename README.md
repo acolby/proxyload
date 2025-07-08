@@ -43,7 +43,7 @@ It starts with conventions. This repository provides tools for maintaining Proxy
 
 ### 📁 Directory Convention
 
-The Arbiter standard enforces a clear 4-level structure inside your `src/` folder:
+The ProxyLoad standard enforces a clear 4-level structure inside your `[proxied]/` folder:
 
 ```
 /proxied                 # you can specified this whereever you'd like
@@ -136,7 +136,7 @@ You can load any item dynamically using the `@acolby/proxyload/load` function. S
 - **Contract-Driven**: Type-safe interfaces ensure correctness.
 - **Variation-Ready**: Built-in support for A/B testing.
 - **Versioned**: All variations follow `[TYPE]/[NAME]/[VARIATION]/[VERSION].js`.
-- **Tooling-Oriented**: Auto-discoverable by Arbiter-compatible tools.
+- **Tooling-Oriented**: Auto-discoverable by ProxyLoad-compatible tools.
 - **Runtime-Interop**: Swappable at runtime if the contract is upheld.
 
 ---

@@ -4,11 +4,8 @@ import load from "../../../src/load";
 
 import JSX from "react/jsx-runtime";
 
-const Proxied = load<{
-  Component: {
-    Button: (props: { text: string; onClick: () => void }) => JSX.Element;
-  };
-}>({
+// TODO: inject proxied types
+const Proxied = load({
   host: "http://localhost:3012",
   loaders: {
     Component: "Loader/Component/default/latest",

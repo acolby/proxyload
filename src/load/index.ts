@@ -2,19 +2,15 @@ export default function load<T>(params: {
   host: string;
   loaders: Record<string, string>;
   globals: Record<string, any>;
-  references?: {
-    harness?: string;
-    items?: string;
-  };
   getVersion: (params: {
     type: string;
     name: string;
     variation?: string;
   }) => string;
 }) {
-  const { host, loaders, references, getVersion, globals } = params;
+  const { host, loaders, getVersion, globals } = params;
 
-  const globalitemsreference = references?.items || "_PL_ITEMS_";
+  const globalitemsreference = "_PL_ITEMS_";
 
   // load globals
   for (const global in globals) {
