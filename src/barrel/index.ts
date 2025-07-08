@@ -24,7 +24,7 @@ export default async function barrel(params: {
     });
 
     for (const item of items) {
-      fs.writeFileSync(
+      await _writeFileIfChanged(
         path.resolve(`${dir}/${type}/${item.name}/index.ts`),
         _createVariationsFile({
           type,
@@ -33,7 +33,7 @@ export default async function barrel(params: {
         })
       );
 
-      fs.writeFileSync(
+      await _writeFileIfChanged(
         path.resolve(`${dir}/${type}/${item.name}/types.ts`),
         _createItemsTypeFile({
           type,
@@ -43,7 +43,7 @@ export default async function barrel(params: {
       );
     }
 
-    fs.writeFileSync(
+    await _writeFileIfChanged(
       path.resolve(`${dir}/${type}/index.ts`),
       _createBarrelFile({
         type,
@@ -51,12 +51,32 @@ export default async function barrel(params: {
       })
     );
 
-    fs.writeFileSync(
+    await _writeFileIfChanged(
       path.resolve(`${dir}/index.ts`),
       _createTopLevelBarrelFile({
         types,
       })
     );
+  }
+}
+
+async function _writeFileIfChanged(
+  filePath: string,
+  content: string
+): Promise<void> {
+  try {
+    // Check if file exists and read current content
+    const existingContent = fs.existsSync(filePath)
+      ? fs.readFileSync(filePath, "utf-8")
+      : null;
+
+    // Only write if content has changed or file doesn't exist
+    if (existingContent !== content) {
+      await fs.promises.writeFile(filePath, content, "utf-8");
+    }
+  } catch (error) {
+    console.error(`Error writing file ${filePath}:`, error);
+    throw error;
   }
 }
 

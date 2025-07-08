@@ -38,8 +38,6 @@ export interface BuildParams {
 export default async function build(params: BuildParams) {
   const entryPoints = await _getEntryPoints(params);
 
-  console.log("entryPoints", entryPoints);
-
   const version = params.version || "latest";
 
   for (const entryPoint of entryPoints) {

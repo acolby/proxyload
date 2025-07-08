@@ -9,8 +9,6 @@ export default async function typegen(params: { dir: string; dist: string }) {
   const typesFiles = await _findTypesFiles(params);
   const indexFile = await _createRolledUpIndexFile(params);
 
-  console.log(indexFile);
-
   const fullobj = {
     ...typesFiles,
     ["/index.ts"]: indexFile,
@@ -35,7 +33,6 @@ async function _findTypesFiles(params: { dir: string }) {
     const itemNames = fs
       .readdirSync(path.resolve(params.dir, typeName))
       .filter((name) => {
-        console.log(typeName, name);
         return name.indexOf(".") === -1;
       });
 
@@ -52,7 +49,7 @@ async function _findTypesFiles(params: { dir: string }) {
 
       typesFiles[`/${typeName}/${itemName}/types.ts`] = `
 // derived from interface files
-${inter}
+${inter.replaceAll("export type", "type")}
 
 // replace the whole import line with and empty string
 ${types.replace(/import type .* from ".*";/g, "")}
@@ -75,7 +72,6 @@ async function _createRolledUpIndexFile(params: { dir: string }) {
     const itemNames = fs
       .readdirSync(path.resolve(params.dir, typeName))
       .filter((name) => {
-        console.log(typeName, name);
         return name.indexOf(".") === -1;
       });
 

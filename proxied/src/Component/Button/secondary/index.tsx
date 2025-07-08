@@ -4,7 +4,7 @@ const Button = ({ text, onClick }: Params) => {
   return (
     <button
       style={{
-        backgroundColor: "red",
+        backgroundColor: "green",
       }}
       onClick={onClick}
     >

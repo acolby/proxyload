@@ -5,9 +5,9 @@
   "scripts": {
     "barrel": "tsx ./scripts/barrel.ts",
     "build": "tsx ./scripts/build.ts",
-    "type": "tsx ./scripts/type.ts",
+    "typegen": "tsx ./scripts/typegen.ts",
     "start": "tsx ./server/index.ts",
-    "dev": "tsx watch ./server/index.ts & tsx watch --include=./src/**/* ./scripts/build.ts"
+    "dev": "tsx watch ./server/index.ts & tsx watch --include=./src/**/**/* ./scripts/build.ts"
   },
   "author": "",
   "license": "ISC",
