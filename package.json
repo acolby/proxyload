@@ -24,6 +24,10 @@
     "./typegen": {
       "import": "./dist/typegen/index.js",
       "types": "./dist/typegen/index.d.ts"
+    },
+    "./typesync": {
+      "import": "./dist/typesync/index.js",
+      "types": "./dist/typesync/index.d.ts"
     }
   },
   "repository": {

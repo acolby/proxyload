@@ -169,6 +169,12 @@ For detailed documentation on the typegen utility, see [src/typegen/README.md](s
 
 The TypeGen utility automatically generates consolidated type definitions from your proxied code structure. It scans your proxied directory, extracts interface and type definitions, and creates a unified `types.json` file that can be consumed by target applications. This ensures type safety across your modular, runtime-loaded codebase.
 
+# TypeSync Utility
+
+For detailed documentation on the typesync utility, see [src/typesync/README.md](src/typesync/README.md).
+
+The TypeSync utility synchronizes type definitions from a running Proxyload server to your local development environment. It fetches the consolidated `types.json` from a server endpoint and writes the type definitions to your local filesystem, ensuring your development environment has access to the latest type definitions from your proxied code structure.
+
 # Barrel Utility
 
 For detailed documentation on the barrel utility, see [src/barrel/Readme.md](src/barrel/Readme.md).
