@@ -2,8 +2,6 @@
   "name": "@acolby/proxyload",
   "version": "0.0.1",
   "description": "A structural standard and toolkit for organizing, typing, loading, and versioning modular TypeScript code at scale. Arbiter enforces a strict filesystem convention for clarity, repeatability, and experimentation in large projects.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "type": "module",
   "files": [
     "dist"
@@ -56,8 +54,7 @@
     "@types/node": "^24.0.10",
     "@types/react": "^19.1.8",
     "esbuild": "^0.25.5",
-    "tsc": "^2.0.4",
     "tsx": "^4.19.4",
-    "typescript": "^5.4.0"
+    "typescript": "^5.8.3"
   }
 }

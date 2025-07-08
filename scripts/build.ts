@@ -1,6 +1,7 @@
 // scripts/build.js
 import { build } from "esbuild";
 import { rmSync, readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 
 // pull in package.json
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
@@ -13,7 +14,7 @@ const entryPoints = Object.entries(exports).map(([key, value]) => {
 
 rmSync("dist", { recursive: true, force: true });
 
-build({
+await build({
   entryPoints,
   bundle: false,
   outdir: "dist",
@@ -25,3 +26,21 @@ build({
   minify: false,
   tsconfig: "tsconfig.json",
 }).catch(() => process.exit(1));
+
+// Run tsc to emit only declaration files
+const tscResult = spawnSync(
+  process.platform === "win32" ? "npx.cmd" : "npx",
+  [
+    "tsc",
+    "--emitDeclarationOnly",
+    "--declaration",
+    "--project",
+    "tsconfig.json",
+  ],
+  { stdio: "inherit" }
+);
+
+if (tscResult.status !== 0) {
+  console.error("TypeScript declaration emit failed.");
+  process.exit(tscResult.status || 1);
+}
