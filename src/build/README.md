@@ -57,10 +57,10 @@ Built files follow the pattern: `[TYPE]/[NAME]/[VARIATION]/[VERSION].js`
 Each file contains code that assigns the module to the global namespace:
 
 ```javascript
-globalThis._PL_ITEMS_["Component/Button/default/latest"] = (() => {
+globalThis._PL_ITEMS_["Component/Button/default/latest"] = () => {
   // Your bundled code here
   return Button;
-})();
+};
 ```
 
 For more details on the Proxyload specification and directory structure, see the [main README](../../README.md).

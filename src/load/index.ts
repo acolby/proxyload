@@ -12,12 +12,17 @@ export default function load<T>(params: {
     variation?: string;
   }) => string;
 }) {
-  const { host, loaders, references, getVersion } = params;
+  const { host, loaders, references, getVersion, globals } = params;
 
   const globalitemsreference = references?.items || "_PL_ITEMS_";
 
-  // Feds is a nested proxy where the first level is the type and the second level is the name
-  const Feds = new Proxy(
+  // load globals
+  for (const global in globals) {
+    // @ts-ignore
+    globalThis[global] = globals[global];
+  }
+
+  const ProxyLoaded = new Proxy(
     {},
     {
       get: (target, type) => {
@@ -27,7 +32,7 @@ export default function load<T>(params: {
             get: (target, name) => {
               const loader_key = loaders[type as string];
               // @ts-ignore
-              const loader = globalThis[globalitemsreference][loader_key];
+              const loader = globalThis[globalitemsreference][loader_key]();
               if (!loader) {
                 console.error(`loader ${loader_key} found or loaded`);
               }
@@ -43,7 +48,7 @@ export default function load<T>(params: {
                   }) ||
                   "latest";
 
-                loader({
+                return loader({
                   host,
                   name,
                   type,
@@ -57,9 +62,7 @@ export default function load<T>(params: {
       },
     }
   );
-  for (const type in loaders) {
-    // @ts-ignore
-    globalThis[globalharnessreference][type] = Feds[type];
-  }
-  return Feds as T;
+  // @ts-ignore
+  globalThis._PL_ = ProxyLoaded;
+  return ProxyLoaded as T;
 }

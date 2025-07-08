@@ -81,7 +81,7 @@ export default async function build(params: BuildParams) {
     );
 
     const ref = `${path.dirname(entryPoint)}/${version}`;
-    code = `globalThis._PL_ITEMS_ = globalThis._PL_ITEMS_ || {}; globalThis._PL_ITEMS_["${ref}"] = (() => { ${code} })();`;
+    code = `globalThis._PL_ITEMS_ = globalThis._PL_ITEMS_ || {}; globalThis._PL_ITEMS_["${ref}"] = (() => { ${code} });`;
 
     const dest = `${params.dist}/${ref}.js`;
     // write to dist making sure the dir exists
