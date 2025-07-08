@@ -6,8 +6,5 @@ import EmailForm_default from "./default";
 
 export const EmailForm: Component_EmailForm = (props) => {
   const { variation = "default" } = props;
-  const variationMap = {
-    default: EmailForm_default,
-  };
-  return variationMap[variation || "default"]?.(props) ?? variationMap["default"](props);
+  return     default: EmailForm_default,[variation || "default"](props);
 };

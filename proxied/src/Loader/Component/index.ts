@@ -6,8 +6,5 @@ import Component_default from "./default";
 
 export const Component: Loader_Component = (props) => {
   const { variation = "default" } = props;
-  const variationMap = {
-    default: Component_default,
-  };
-  return variationMap[variation || "default"]?.(props) ?? variationMap["default"](props);
+  return     default: Component_default,[variation || "default"](props);
 };
