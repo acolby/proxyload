@@ -1,8 +1,9 @@
-import React from "react";
 import type { Interface } from "../interface";
 
 const Loader: Interface = (params) => {
   return (props) => {
+    const React = globalThis.React;
+
     const [loaded, setLoaded] = React.useState(false);
 
     const itemKey = `${params.type}/${params.name}/${params.variation}/${params.version}`;
@@ -20,7 +21,7 @@ const Loader: Interface = (params) => {
     // @ts-ignore
     if (globalThis._PL_ITEMS_[itemKey]) {
       // @ts-ignore
-      const Comp = globalThis._PL_ITEMS_[itemKey]();
+      const Comp = globalThis._PL_ITEMS_[itemKey];
       return Comp(props);
     }
 

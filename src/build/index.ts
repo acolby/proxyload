@@ -38,6 +38,8 @@ export interface BuildParams {
 export default async function build(params: BuildParams) {
   const entryPoints = await _getEntryPoints(params);
 
+  console.log("entryPoints", entryPoints);
+
   const version = params.version || "latest";
 
   for (const entryPoint of entryPoints) {
@@ -81,7 +83,7 @@ export default async function build(params: BuildParams) {
     );
 
     const ref = `${path.dirname(entryPoint)}/${version}`;
-    code = `globalThis._PL_ITEMS_ = globalThis._PL_ITEMS_ || {}; globalThis._PL_ITEMS_["${ref}"] = (() => { ${code} });`;
+    code = `globalThis._PL_ITEMS_ = globalThis._PL_ITEMS_ || {}; globalThis._PL_ITEMS_["${ref}"] = (() => { ${code} })();`;
 
     const dest = `${params.dist}/${ref}.js`;
     // write to dist making sure the dir exists

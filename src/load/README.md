@@ -24,10 +24,6 @@ const proxied = load({
   globals: {
     // Global variables available to all loaded modules
   },
-  references: {
-    harness: "_PL_", // Global reference for the harness (default: '_PL_')
-    items: "_PL_ITEMS_", // Global reference for loaders (default: '_PL_ITEMS_')
-  },
   // A callback function that will be called any time a version is needed
   // This is usefule for manifest deploys
   getVersion: ({ type, name, variation }) => {

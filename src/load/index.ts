@@ -28,7 +28,7 @@ export default function load<T>(params: {
             get: (target, name) => {
               const loader_key = loaders[type as string];
               // @ts-ignore
-              const loader = globalThis[globalitemsreference][loader_key]();
+              const loader = globalThis[globalitemsreference][loader_key];
               if (!loader) {
                 console.error(`loader ${loader_key} found or loaded`);
               }

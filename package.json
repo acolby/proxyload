@@ -20,6 +20,10 @@
     "./load": {
       "import": "./dist/load/index.js",
       "types": "./dist/load/index.d.ts"
+    },
+    "./typegen": {
+      "import": "./dist/typegen/index.js",
+      "types": "./dist/typegen/index.d.ts"
     }
   },
   "repository": {
