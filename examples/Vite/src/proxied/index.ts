@@ -17,4 +17,7 @@ const Proxied = load<ProxiedTypes>({
   getVersion: () => "latest",
 });
 
+// @ts-ignore
+globalThis["_PROXIED_"] = Proxied;
+
 export default Proxied;

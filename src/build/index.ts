@@ -156,7 +156,24 @@ export function _rewriteImports(
         const global = remap[source];
         if (!global) return full;
 
-        return `var { ${imports.trim()} } = globalThis.${global};`;
+        // Transform import names to handle "as" syntax
+        const transformedImports = imports
+          .split(",")
+          .map((importItem: string) => {
+            const trimmed = importItem.trim();
+            // Match pattern: "originalName as aliasName" or just "name"
+            const asMatch = trimmed.match(
+              /^([a-zA-Z_$][\w$]*)\s+as\s+([a-zA-Z_$][\w$]*)$/
+            );
+            if (asMatch) {
+              // Convert "originalName as aliasName" to "originalName: aliasName"
+              return `${asMatch[1]}: ${asMatch[2]}`;
+            }
+            return trimmed;
+          })
+          .join(", ");
+
+        return `var { ${transformedImports} } = globalThis.${global};`;
       }
     )
     .replace(

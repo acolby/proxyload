@@ -3,7 +3,7 @@ import barrel from "../../src/barrel";
 import typegen from "../../src/typegen";
 
 const GLOBALS = {
-  "@proxied": "_PROXIED_",
+  "@proxied": "_PL_",
   "react/jsx-runtime": "JSX",
   react: "React",
 };

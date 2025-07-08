@@ -5,6 +5,11 @@ import Proxied from "./proxied";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
+    <Proxied.Component.EmailForm
+      onSubmit={() => {
+        console.log("submitted");
+      }}
+    />
     <Proxied.Component.Button
       text="Click me"
       onClick={() => {

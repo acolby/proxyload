@@ -7,9 +7,11 @@ export default function load<T>(params: {
     name: string;
     variation?: string;
   }) => string;
+  namespace?: string;
 }) {
   const { host, loaders, getVersion, globals } = params;
 
+  const namespace = params.namespace || "_PL_";
   const globalitemsreference = "_PL_ITEMS_";
 
   // load globals
@@ -59,6 +61,6 @@ export default function load<T>(params: {
     }
   );
   // @ts-ignore
-  globalThis._PL_ = ProxyLoaded;
+  globalThis[namespace] = ProxyLoaded;
   return ProxyLoaded as T;
 }
