@@ -34,7 +34,7 @@ This approach unlocks powerful runtime capabilities:
 - Runtime interop for both SSR and CSR
 - Predictable asset caching (client and server)
 - Manifest-based deploys
-- Extremely fast builds
+- Extremely fast builds (no fancy bundling, every item acts as its own entrypoint)
 - Injectable middleware for various code types
 
 ## ⚙️ How it Works
@@ -141,6 +141,116 @@ You can load any item dynamically using the `@acolby/proxyload/load` function. S
 
 ---
 
+# Examples
+
+## Decoupled Proxy Object
+
+The `proxied/` directory in this project demonstrates how to create a decoupled proxy object following the Proxyload standard. This example shows the complete structure for a modular component system:
+
+```
+proxied/src/
+├── Component/
+│   ├── Button/
+│   │   ├── interface.ts          # Defines the component contract
+│   │   ├── default/
+│   │   │   └── index.tsx         # Default implementation
+│   │   └── secondary/
+│   │       └── index.tsx         # Alternative variation
+│   └── EmailForm/
+│       ├── interface.ts
+│       └── default/
+│           └── index.tsx
+└── Loader/
+    └── Component/
+        └── default/
+            └── index.ts          # Custom loader for Component type
+```
+
+## Host Application Integration
+
+The `examples/Vite/` directory demonstrates how a host application integrates the proxy object at runtime. This example shows a React application that dynamically loads components from the proxied structure:
+
+### Proxy Configuration
+
+```tsx
+// examples/Vite/src/proxied/index.ts
+import React from "react";
+import load from "@acolby/proxyload/load";
+import JSX from "react/jsx-runtime";
+import { ProxiedTypes } from "./types/index";
+
+const Proxied = load<ProxiedTypes>({
+  host: "http://localhost:3012",
+  loaders: {
+    Component: "Loader/Component/default/latest",
+  },
+  globals: {
+    JSX: JSX,
+    React: React,
+  },
+  getVersion: () => "latest",
+});
+
+export default Proxied;
+```
+
+### Runtime Usage
+
+```tsx
+// examples/Vite/src/main.tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import Proxied from "./proxied";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    // This code is pulled in at runtime per the implementation of the loader
+    <Proxied.Component.Button
+      text="Click me"
+      onClick={() => {
+        console.log("clicked");
+      }}
+    />
+  </React.StrictMode>
+);
+```
+
+This demonstrates how the host application can seamlessly use proxied components as if they were locally imported, while the actual implementation is loaded dynamically at runtime.
+
+---
+
+# Utilities
+
+## Load Utility
+
+For detailed documentation on the load utility, see [src/load/README.md](src/load/README.md).
+
+The load utility creates a nested proxy structure for dynamically loading and executing code based on type and name hierarchies. It's the core mechanism that enables Proxyload's runtime code loading capabilities.
+
+## Build Utility
+
+For detailed documentation on the build utility, see [src/build/README.md](src/build/README.md).
+
+The build utility compiles your proxied code structure into individual JavaScript files that can be dynamically loaded at runtime. It uses esbuild under the hood and supports custom plugins and configuration options.
+
+## TypeGen Utility
+
+For detailed documentation on the typegen utility, see [src/typegen/README.md](src/typegen/README.md).
+
+The TypeGen utility automatically generates consolidated type definitions from your proxied code structure. It scans your proxied directory, extracts interface and type definitions, and creates a unified `types.json` file that can be consumed by target applications. This ensures type safety across your modular, runtime-loaded codebase.
+
+## TypeSync Utility
+
+For detailed documentation on the typesync utility, see [src/typesync/README.md](src/typesync/README.md).
+
+The TypeSync utility synchronizes type definitions from a running Proxyload server to your local development environment. It fetches the consolidated `types.json` from a server endpoint and writes the type definitions to your local filesystem, ensuring your development environment has access to the latest type definitions from your proxied code structure.
+
+## Barrel Utility
+
+For detailed documentation on the barrel utility, see [src/barrel/Readme.md](src/barrel/Readme.md).
+
+The barrel utility automatically generates TypeScript files that create type-safe, variation-aware interfaces for your proxied code structure. It scans your proxied directory and generates variation selectors, type definitions, and barrel export files to maintain consistency and reduce boilerplate.
+
 ## 🚧 Status
 
 This is an early-stage specification and toolkit. Expect rapid iteration.
@@ -150,33 +260,3 @@ Join the development or follow progress on GitHub: [github.com/acolby/proxyload]
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-# Load Utility
-
-For detailed documentation on the load utility, see [src/load/README.md](src/load/README.md).
-
-The load utility creates a nested proxy structure for dynamically loading and executing code based on type and name hierarchies. It's the core mechanism that enables Proxyload's runtime code loading capabilities.
-
-# Build Utility
-
-For detailed documentation on the build utility, see [src/build/README.md](src/build/README.md).
-
-The build utility compiles your proxied code structure into individual JavaScript files that can be dynamically loaded at runtime. It uses esbuild under the hood and supports custom plugins and configuration options.
-
-# TypeGen Utility
-
-For detailed documentation on the typegen utility, see [src/typegen/README.md](src/typegen/README.md).
-
-The TypeGen utility automatically generates consolidated type definitions from your proxied code structure. It scans your proxied directory, extracts interface and type definitions, and creates a unified `types.json` file that can be consumed by target applications. This ensures type safety across your modular, runtime-loaded codebase.
-
-# TypeSync Utility
-
-For detailed documentation on the typesync utility, see [src/typesync/README.md](src/typesync/README.md).
-
-The TypeSync utility synchronizes type definitions from a running Proxyload server to your local development environment. It fetches the consolidated `types.json` from a server endpoint and writes the type definitions to your local filesystem, ensuring your development environment has access to the latest type definitions from your proxied code structure.
-
-# Barrel Utility
-
-For detailed documentation on the barrel utility, see [src/barrel/Readme.md](src/barrel/Readme.md).
-
-The barrel utility automatically generates TypeScript files that create type-safe, variation-aware interfaces for your proxied code structure. It scans your proxied directory and generates variation selectors, type definitions, and barrel export files to maintain consistency and reduce boilerplate.
