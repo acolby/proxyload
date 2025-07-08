@@ -6,7 +6,13 @@
   "files": [
     "dist"
   ],
+  "main": "./dist/load/index.js",
+  "types": "./dist/load/index.d.ts",
   "exports": {
+    ".": {
+      "import": "./dist/load/index.js",
+      "types": "./dist/load/index.d.ts"
+    },
     "./barrel": {
       "import": "./dist/barrel/index.js",
       "types": "./dist/barrel/index.d.ts"
