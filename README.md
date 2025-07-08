@@ -163,6 +163,12 @@ For detailed documentation on the build utility, see [src/build/README.md](src/b
 
 The build utility compiles your proxied code structure into individual JavaScript files that can be dynamically loaded at runtime. It uses esbuild under the hood and supports custom plugins and configuration options.
 
+# TypeGen Utility
+
+For detailed documentation on the typegen utility, see [src/typegen/README.md](src/typegen/README.md).
+
+The TypeGen utility automatically generates consolidated type definitions from your proxied code structure. It scans your proxied directory, extracts interface and type definitions, and creates a unified `types.json` file that can be consumed by target applications. This ensures type safety across your modular, runtime-loaded codebase.
+
 # Barrel Utility
 
 For detailed documentation on the barrel utility, see [src/barrel/Readme.md](src/barrel/Readme.md).
