@@ -20,7 +20,7 @@ await build({
   entryPoints,
   bundle: false,
   outdir: "dist",
-  format: "esm",
+  format: "cjs",
   target: ["esnext"],
   jsx: "automatic",
   sourcemap: true,
