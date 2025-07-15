@@ -8,9 +8,11 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 
 const { exports } = packageJson;
 
-const entryPoints = Object.entries(exports).map(([key, value]) => {
-  return `src/${key}/index.ts`;
-});
+const entryPoints = Object.entries(exports)
+  .filter(([key]) => key !== ".") // Skip the root export
+  .map(([key, value]) => {
+    return `src/${key}/index.ts`;
+  });
 
 rmSync("dist", { recursive: true, force: true });
 

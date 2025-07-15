@@ -39,7 +39,7 @@
     "url": "git+https://github.com/acolby/proxyload.git"
   },
   "scripts": {
-    "build": "tsx ./scripts/build.js && tsc -p tsconfig.json",
+    "build": "tsx ./scripts/build.ts",
     "prepublishOnly": "rm -rf dist && tsc"
   },
   "keywords": [
