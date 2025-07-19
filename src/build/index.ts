@@ -36,6 +36,9 @@ export interface BuildParams {
  */
 
 export default async function build(params: BuildParams) {
+  // Ensure the dist directory exists
+  fs.mkdirSync(params.dist, { recursive: true });
+
   const entryPoints = await _getEntryPoints(params);
 
   const version = params.version || "latest";
