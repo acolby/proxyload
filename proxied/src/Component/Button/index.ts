@@ -7,6 +7,8 @@ import Button_secondary from "./secondary";
 
 export const Button: Component_Button = (props) => {
   const { variation = "default" } = props;
-  return     default: Button_default,
-    secondary: Button_secondary,[variation || "default"](props);
+  return {
+    default: Button_default,
+    secondary: Button_secondary,
+  }[variation || "default"](props);
 };

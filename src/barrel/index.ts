@@ -104,7 +104,9 @@ ${imports.join("\n")}
 
 export const ${name}: ${type}_${name} = (props) => {
   const { variation = "${variations[0]}" } = props;
-  return ${variationEntries.join("\n")}[variation || "${variations[0]}"](props);
+  return {
+${variationEntries.join("\n")}
+  }[variation || "${variations[0]}"](props);
 };
 `;
 
