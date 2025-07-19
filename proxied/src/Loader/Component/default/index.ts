@@ -21,7 +21,7 @@ const Loader: Interface = (params) => {
     // @ts-ignore
     if (globalThis._PL_ITEMS_[itemKey]) {
       // @ts-ignore
-      const Comp = globalThis._PL_ITEMS_[itemKey]();
+      const Comp = globalThis._PL_ITEMS_[itemKey];
       return Comp(props);
     }
 
