@@ -8,4 +8,5 @@ const __dirname = dirname(__filename);
 await typesync({
   dest: resolve(__dirname, "../src/proxied/types"),
   host: "http://localhost:3012",
+  key: "latest",
 });

@@ -7,6 +7,7 @@ export interface BuildParams {
   dir: string;
   dist: string;
   globals: Record<string, string>;
+  key: string;
   plugins?: Plugin[];
   esbuildOptions?: Partial<BuildOptions>;
   version?: string;
@@ -67,13 +68,17 @@ export default async function build(params: BuildParams) {
     });
 
     const hash = result.outputFiles?.[0]?.hash;
-    let version = params.version || hash || "latest";
-    manifest[entryPoint.split("/").slice(0, -1).join("/")] = version;
 
-    // Replace {hash} placeholder with actual hash if present
-    if (params.version && hash) {
-      version = params.version.replace(/\{hash\}/g, hash);
+    console.log(entryPoint);
+    console.log(hash);
+
+    let version = params.version || "HASH";
+
+    if (hash) {
+      version = version.replace("HASH", hash);
     }
+
+    manifest[entryPoint.split("/").slice(0, -1).join("/")] = version;
 
     if (!result.outputFiles || result.outputFiles.length === 0) {
       throw new Error(
@@ -102,6 +107,20 @@ export default async function build(params: BuildParams) {
 
     fs.writeFileSync(dest, code);
   }
+
+  // now write the manifest
+  const dest = path.resolve(
+    params.dist,
+    "_releases",
+    params.key,
+    "manifest.json"
+  );
+  // make sure the dir exists
+  fs.mkdirSync(path.dirname(dest), {
+    recursive: true,
+  });
+
+  fs.writeFileSync(dest, JSON.stringify(manifest, null, 2));
 
   return manifest;
 }

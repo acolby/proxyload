@@ -22,13 +22,16 @@ async function main() {
   await typegen({
     dir,
     dist,
+    key: "latest",
   });
 
   console.log("build...");
   await build({
     dir,
     dist,
+    key: "latest",
     globals: GLOBALS,
+    version: "HASH",
   });
 }
 

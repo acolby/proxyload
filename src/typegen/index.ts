@@ -5,9 +5,14 @@ import path from "node:path";
 goes through the target directory and finds all interface files and exposes them as a JSON object
 */
 
-export default async function typegen(params: { dir: string; dist: string }) {
+export default async function typegen(params: {
+  dir: string;
+  dist: string;
+  key: string;
+}) {
   // Ensure the dist directory exists
-  fs.mkdirSync(params.dist, { recursive: true });
+  const dest = path.resolve(params.dist, "_releases", params.key);
+  fs.mkdirSync(dest, { recursive: true });
 
   const interfaceFiles = await _findInterfaceFiles(params);
   const barrelIndex = _generateBarrelIndex(interfaceFiles);
@@ -17,7 +22,7 @@ export default async function typegen(params: { dir: string; dist: string }) {
 
   // push to dist under types.json
   fs.writeFileSync(
-    path.resolve(params.dist, "types.json"),
+    path.resolve(dest, "types.json"),
     JSON.stringify(interfaceFiles, null, 2)
   );
 }
