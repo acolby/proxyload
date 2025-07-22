@@ -30,7 +30,7 @@ export interface BuildParams {
  *     sourcemap: true,
  *   },
  *   minify: true,
- *   version: 'v1.0.0'
+ *   version: 'v1.0.0-{hash}' // {hash} will be replaced with the actual build hash
  * });
  * ```
  */
@@ -40,8 +40,7 @@ export default async function build(params: BuildParams) {
   fs.mkdirSync(params.dist, { recursive: true });
 
   const entryPoints = await _getEntryPoints(params);
-
-  const version = params.version || "latest";
+  const manifest: Record<string, string> = {};
 
   for (const entryPoint of entryPoints) {
     const result = await esbuild({
@@ -66,6 +65,15 @@ export default async function build(params: BuildParams) {
       // Allow custom plugins
       plugins: params.plugins || [],
     });
+
+    const hash = result.outputFiles?.[0]?.hash;
+    let version = params.version || hash || "latest";
+    manifest[entryPoint.split("/").slice(0, -1).join("/")] = version;
+
+    // Replace {hash} placeholder with actual hash if present
+    if (params.version && hash) {
+      version = params.version.replace(/\{hash\}/g, hash);
+    }
 
     if (!result.outputFiles || result.outputFiles.length === 0) {
       throw new Error(
@@ -94,6 +102,8 @@ export default async function build(params: BuildParams) {
 
     fs.writeFileSync(dest, code);
   }
+
+  return manifest;
 }
 
 async function _getEntryPoints(params: Pick<BuildParams, "dir">) {
