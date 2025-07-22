@@ -1,6 +1,6 @@
 // scripts/build.js
 import { build } from "esbuild";
-import { rmSync, readFileSync } from "node:fs";
+import { rmSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 // pull in package.json
@@ -28,6 +28,19 @@ await build({
   minify: false,
   tsconfig: "tsconfig.json",
 }).catch(() => process.exit(1));
+
+// Create manifest.js file that sets the proxyload manifest to global namespace
+const manifestContent = `globalThis._PLM_ = (() => {
+  return {
+    load: (await import('./load/index.js')).default,
+    barrel: (await import('./barrel/index.js')).default,
+    build: (await import('./build/index.js')).default,
+    typegen: (await import('./typegen/index.js')).default,
+    typesync: (await import('./typesync/index.js')).default
+  };
+})();`;
+
+writeFileSync("dist/manifest.js", manifestContent);
 
 // Run tsc to emit only declaration files
 const tscResult = spawnSync(

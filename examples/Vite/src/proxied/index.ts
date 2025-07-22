@@ -8,13 +8,12 @@ import { Proxied } from "./types/index";
 const ProxiedLoaded = load<Proxied>({
   host: "http://localhost:3012",
   loaders: {
-    Component: "Loader/Component/default/latest",
+    Component: "Loader/Component/default/lrbIhPV6Tus",
   },
   globals: {
     JSX: JSX,
     React: React,
   },
-  getVersion: () => "latest",
 });
 
 // @ts-ignore

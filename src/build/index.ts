@@ -122,6 +122,21 @@ export default async function build(params: BuildParams) {
 
   fs.writeFileSync(dest, JSON.stringify(manifest, null, 2));
 
+  // also write manifest.js that sets the manifest to global namespace
+  const manifestJsDest = path.resolve(
+    params.dist,
+    "_releases",
+    params.key,
+    "manifest.js"
+  );
+
+  const manifestJsContent = `globalThis._PLM_ = ${JSON.stringify(
+    manifest,
+    null,
+    2
+  )};`;
+  fs.writeFileSync(manifestJsDest, manifestJsContent);
+
   return manifest;
 }
 
