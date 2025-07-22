@@ -124,6 +124,29 @@ Use the build wrapper to wrap an ESM module according to the `index` standard ab
 
 By default, the variation is `default` and the version is `latest`.
 
+### 📦 Release Management
+
+Proxyload organizes build artifacts and type definitions under release keys for version control and deployment management:
+
+```
+dist/
+├── [TYPE]/
+│   └── [NAME]/
+│       └── [VARIATION]/
+│           └── [VERSION].js
+└── _releases/
+    └── [KEY]/
+        ├── manifest.json    # Version mapping for build artifacts
+        └── types.json       # Consolidated type definitions
+```
+
+The release key system enables:
+
+- **Version Control**: Organize builds and types under meaningful release keys (e.g., "latest", "v1.0.0", "staging")
+- **Deployment Management**: Deploy specific releases independently
+- **Type Safety**: Ensure type definitions match the deployed code versions
+- **Rollback Capability**: Quickly switch between different releases
+
 You can load any item dynamically using the `@acolby/proxyload/load` function. See `src/load/README.md`.
 
 **Note:** You are responsible for implementing custom loaders per `[TYPE]`.
@@ -237,13 +260,13 @@ The build utility compiles your proxied code structure into individual JavaScrip
 
 For detailed documentation on the typegen utility, see [src/typegen/README.md](src/typegen/README.md).
 
-The TypeGen utility automatically generates consolidated type definitions from your proxied code structure. It scans your proxied directory, extracts interface and type definitions, and creates a unified `types.json` file that can be consumed by target applications. This ensures type safety across your modular, runtime-loaded codebase.
+The TypeGen utility automatically generates consolidated type definitions from your proxied code structure. It scans your proxied directory, extracts interface and type definitions, and creates a unified `types.json` file organized under release keys. This ensures type safety across your modular, runtime-loaded codebase and enables version-controlled type management.
 
 ## TypeSync Utility
 
 For detailed documentation on the typesync utility, see [src/typesync/README.md](src/typesync/README.md).
 
-The TypeSync utility synchronizes type definitions from a running Proxyload server to your local development environment. It fetches the consolidated `types.json` from a server endpoint and writes the type definitions to your local filesystem, ensuring your development environment has access to the latest type definitions from your proxied code structure.
+The TypeSync utility synchronizes type definitions from a running Proxyload server to your local development environment. It fetches the consolidated `types.json` from a server's `/_releases/{key}/types.json` endpoint and writes the type definitions to your local filesystem, ensuring your development environment has access to the latest type definitions from your proxied code structure with release-aware versioning.
 
 ## Barrel Utility
 
