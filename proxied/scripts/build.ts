@@ -3,7 +3,7 @@ import barrel from "../../src/barrel";
 import typegen from "../../src/typegen";
 
 const GLOBALS = {
-  "@proxied": "_PL_",
+  "@proxied": "_PROXIED_",
   "react/jsx-runtime": "JSX",
   react: "React",
 };
@@ -32,6 +32,9 @@ async function main() {
     key: "latest",
     globals: GLOBALS,
     version: "HASH",
+    loaders: {
+      Component: "Loader/Component/default",
+    },
   });
 }
 

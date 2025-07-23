@@ -1,18 +1,22 @@
-export default function load<T>(params: {
+export default async function load<T>(params: {
   host: string;
+  key: string;
   loaders: Record<string, string>;
   globals: Record<string, any>;
-  getVersion?: (params: {
-    type: string;
-    name: string;
-    variation?: string;
-  }) => string;
   namespace?: string;
 }) {
   const { host, loaders, globals } = params;
-  const getVersion = params.getVersion;
+
   const namespace = params.namespace || "_PL_";
   const globalitemsreference = "_PL_ITEMS_";
+
+  // load the manifest
+  const manifest = await (
+    await fetch(`${host}/_releases/${params.key}/manifest.json`)
+  ).json();
+
+  console.log(manifest);
+
   // load globals
   for (const global in globals) {
     // @ts-ignore
@@ -44,16 +48,7 @@ export default function load<T>(params: {
                   // Try to get version from props first, then getVersion function, then _PLM_ global, then fallback to "latest"
                   let version = props.version;
 
-                  if (!version && getVersion) {
-                    version = getVersion({
-                      type: type,
-                      name: name,
-                      variation,
-                    });
-                  }
-                  console.log("loading", type, name, variation);
                   if (!version && (globalThis as any)._PLM_) {
-                    console.log("loading from manifest");
                     const manifestKey = `${type}/${name}/${variation}`;
                     version = (globalThis as any)._PLM_[manifestKey];
                   }

@@ -8,6 +8,7 @@ export interface BuildParams {
   dist: string;
   globals: Record<string, string>;
   key: string;
+  loaders: Record<string, string>;
   plugins?: Plugin[];
   esbuildOptions?: Partial<BuildOptions>;
   version?: string;
@@ -67,10 +68,8 @@ export default async function build(params: BuildParams) {
       plugins: params.plugins || [],
     });
 
-    const hash = result.outputFiles?.[0]?.hash;
-
-    console.log(entryPoint);
-    console.log(hash);
+    // I need to URL sanitize the hash
+    const hash = result.outputFiles?.[0]?.hash.replace(/[^a-zA-Z0-9]/g, "-");
 
     let version = params.version || "HASH";
 
@@ -97,9 +96,9 @@ export default async function build(params: BuildParams) {
     );
 
     const ref = `${path.dirname(entryPoint)}/${version}`;
-    code = `globalThis._PL_ITEMS_ = globalThis._PL_ITEMS_ || {}; globalThis._PL_ITEMS_["${ref}"] = (() => { ${code} })();`;
+    code = `globalThis._PL_.items["${ref}"] = (() => { ${code} })();`;
 
-    const dest = `${params.dist}/${ref}.js`;
+    const dest = `${params.dist}/items/${ref}.js`;
     // write to dist making sure the dir exists
     fs.mkdirSync(path.dirname(dest), {
       recursive: true,
@@ -108,10 +107,10 @@ export default async function build(params: BuildParams) {
     fs.writeFileSync(dest, code);
   }
 
-  // now write the manifest
+  // now write the manifest.json
   const dest = path.resolve(
     params.dist,
-    "_releases",
+    "releases",
     params.key,
     "manifest.json"
   );
@@ -119,23 +118,36 @@ export default async function build(params: BuildParams) {
   fs.mkdirSync(path.dirname(dest), {
     recursive: true,
   });
-
   fs.writeFileSync(dest, JSON.stringify(manifest, null, 2));
 
-  // also write manifest.js that sets the manifest to global namespace
-  const manifestJsDest = path.resolve(
-    params.dist,
-    "_releases",
-    params.key,
-    "manifest.js"
+  // write the release entry
+  fs.writeFileSync(
+    path.resolve(params.dist, "releases", params.key, "index.js"),
+    `globalThis._PL_ = globalThis._PL_ || { items: {}, releases: {}, current: null };
+globalThis._PL_.current = "${params.key}";
+globalThis._PL_.releases["${params.key}"] = {
+  manifest: ${JSON.stringify(manifest, null, 2)},
+  loaders: {
+${Object.entries(params.loaders)
+  .map(([key, value]) => `    "${key}": "${value}/${manifest[value]}"`)
+  .join(",\n")}
+  },
+  globals: ${JSON.stringify(params.globals, null, 2)},
+};
+`
   );
 
-  const manifestJsContent = `globalThis._PLM_ = ${JSON.stringify(
-    manifest,
-    null,
-    2
-  )};`;
-  fs.writeFileSync(manifestJsDest, manifestJsContent);
+  // write relese loaders
+  for (const loader of Object.values(params.loaders)) {
+    const entry = loader;
+    const version = manifest[entry];
+    const src = `${params.dist}/items/${entry}/${version}.js`;
+    const code = fs.readFileSync(src, "utf8");
+    fs.writeFileSync(
+      path.resolve(params.dist, "releases", params.key, "loaders.js"),
+      code
+    );
+  }
 
   return manifest;
 }

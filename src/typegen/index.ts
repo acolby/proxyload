@@ -11,7 +11,7 @@ export default async function typegen(params: {
   key: string;
 }) {
   // Ensure the dist directory exists
-  const dest = path.resolve(params.dist, "_releases", params.key);
+  const dest = path.resolve(params.dist, "releases", params.key);
   fs.mkdirSync(dest, { recursive: true });
 
   const interfaceFiles = await _findInterfaceFiles(params);

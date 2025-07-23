@@ -11,7 +11,7 @@ const Loader: Interface = (params) => {
     React.useEffect(() => {
       // add script tag to head pointing to the host + /loader/component/default/latest.js
       const script = document.createElement("script");
-      script.src = `${params.host}/${itemKey}.js`;
+      script.src = `${params.host}/items/${itemKey}.js`;
       document.head.appendChild(script);
       script.onload = () => {
         setLoaded(true);
