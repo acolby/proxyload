@@ -6,8 +6,10 @@ A utility function that creates a nested proxy structure for dynamically loading
 
 The `load` function creates a two-level proxy system where:
 
-- First level: **Type** (e.g., "component", "service", "util")
+- First level: **Type** (e.g., "Component", "Service", "Util")
 - Second level: **Name** (e.g., "Button", "AuthService", "formatDate")
+
+The function automatically retrieves loader mappings and manifest data from the release object, simplifying the configuration.
 
 ## Usage
 
@@ -16,50 +18,38 @@ import load from "./index";
 
 const proxied = load({
   host: "https://example.com",
-  loaders: {
-    // Loaders should also be served from the same project
-    Component: "Loader/Component/default/latest",
-    Util: "Loader/Compeont/default/latest",
-  },
   globals: {
     // Global variables available to all loaded modules
-  },
-  // A callback function that will be called any time a version is needed
-  // This is usefule for manifest deploys
-  getVersion: ({ type, name, variation }) => {
-    // Custom version resolution logic
-    return "latest";
   },
 });
 
 // Usage examples:
 
-proxied.component.Button({ variation: "primary" });
-const await proxied.util.formatDate({ variation: "short" });
-
+proxied.Component.Button({ variation: "primary" });
+const result = await proxied.Util.formatDate({ variation: "short" });
 ```
 
 ## Parameters
 
 - `host`: Base URL for loading resources
-- `types`: Array of supported type categories
-- `loaders`: Mapping of types to their corresponding loader functions
 - `globals`: Global variables to make available to loaded modules
-- `references`: Optional custom global reference names
-- `getVersion`: Function to resolve version for a given type/name/variation
+- `namespace`: Optional custom namespace (defaults to "_PL_")
 
 ## How It Works
 
 1. Creates a nested proxy structure: `Proxied[type][name]`
-2. Each call resolves the appropriate loader based on type
-3. Executes the loader with host, name, type, version, and variation parameters
-4. Makes the proxy available globally via the harness reference
+2. Automatically retrieves loader mappings from `globalThis._PL_.releases[key].loaders`
+3. Retrieves version information from `globalThis._PL_.releases[key].manifest`
+4. Executes the appropriate loader with host, name, type, version, and variation parameters
+5. Makes the proxy available globally via the namespace reference
 
-## Global References
+## Global Structure
 
-The utility creates two global references:
+The load utility works with the following global structure created by the build process:
 
-- **Harness**: Contains the proxy structure and globals
-- **Items**: Contains the loader functions for each type
+- `globalThis._PL_.items` - Contains all loaded modules
+- `globalThis._PL_.releases[key].loaders` - Contains loader mappings for each type
+- `globalThis._PL_.releases[key].manifest` - Contains version mappings for modules
+- `globalThis._PL_.releases[key].globals` - Contains global variables for the release
 
-These can be customized via the `references` parameter.
+This structure is automatically set up by the build utility and allows for seamless runtime loading without manual configuration.

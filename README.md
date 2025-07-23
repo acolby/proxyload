@@ -111,16 +111,7 @@ Each entry point is expected to be built and output individually using the follo
 [TYPE]/[NAME]/[VARIATION]/[VERSION].js
 ```
 
-Each build artifact should assign a variable to the global namespace:
-
-```js
-globalThis._PL_ITEMS_["[TYPE]/[NAME]/[VARIATION]/[VERSION]"] = (() => {
-  // implementation here...
-  return Button;
-})();
-```
-
-Use the build wrapper to wrap an ESM module according to the `index` standard above (see `src/buildwrapper/README.js`).
+Each build artifact is automatically assigned to the global namespace by the build utility. The build process creates a structured global object that organizes all your proxied code for runtime loading.
 
 By default, the variation is `default` and the version is `latest`.
 
@@ -204,14 +195,10 @@ import { ProxiedTypes } from "./types/index";
 
 const Proxied = load<ProxiedTypes>({
   host: "http://localhost:3012",
-  loaders: {
-    Component: "Loader/Component/default/latest",
-  },
   globals: {
     JSX: JSX,
     React: React,
   },
-  getVersion: () => "latest",
 });
 
 export default Proxied;

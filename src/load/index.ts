@@ -1,14 +1,12 @@
 export default async function load<T>(params: {
   host: string;
   key: string;
-  loaders: Record<string, string>;
   globals: Record<string, any>;
   namespace?: string;
 }) {
-  const { host, loaders, globals } = params;
+  const { host, globals } = params;
 
   const namespace = params.namespace || "_PL_";
-  const globalitemsreference = "_PL_ITEMS_";
 
   // load the manifest
   const manifest = await (
@@ -33,24 +31,35 @@ export default async function load<T>(params: {
           {
             get: (target, name: string) => {
               const _id = `${type}/${name}`;
-              const loader_key = loaders[type];
               // @ts-ignore
-              const loader = globalThis[globalitemsreference][loader_key];
+              const releaseLoaders = (globalThis as any)[namespace]?.releases?.[
+                params.key
+              ]?.loaders;
+              const loader_key = releaseLoaders?.[type];
+              // @ts-ignore
+              const loader = (globalThis as any)[namespace].items[loader_key];
               if (!loader) {
                 // @ts-ignore
-                console.error(`loader ${loader_key} found or loaded`);
+                console.error(`loader ${loader_key} not found or loaded`);
               }
 
               if (!memoized[_id] || typeof window === "undefined") {
                 memoized[_id] = (props: Record<string, any>) => {
                   const variation = props.variation || "default";
 
-                  // Try to get version from props first, then getVersion function, then _PLM_ global, then fallback to "latest"
+                  // Try to get version from props first, then manifest, then fallback to "latest"
                   let version = props.version;
 
-                  if (!version && (globalThis as any)._PLM_) {
-                    const manifestKey = `${type}/${name}/${variation}`;
-                    version = (globalThis as any)._PLM_[manifestKey];
+                  if (
+                    !version &&
+                    (globalThis as any)[namespace]?.releases?.[params.key]
+                      ?.manifest
+                  ) {
+                    const manifest = (globalThis as any)[namespace].releases[
+                      params.key
+                    ].manifest;
+                    const manifestKey = `${type}/${name}`;
+                    version = manifest[manifestKey];
                   }
 
                   if (!version) {

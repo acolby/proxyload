@@ -61,27 +61,32 @@ The build process creates the following structure:
 
 ```
 dist/
-├── [TYPE]/
-│   └── [NAME]/
-│       └── [VARIATION]/
-│           └── [VERSION].js
+├── items/
+│   └── [TYPE]/
+│       └── [NAME]/
+│           └── [VARIATION]/
+│               └── [VERSION].js
 └── _releases/
     └── [KEY]/
-        └── manifest.json
+        ├── manifest.json
+        ├── index.js
+        └── loaders.js
 ```
 
 Each built file contains code that assigns the module to the global namespace:
 
 ```javascript
-globalThis._PL_ITEMS_["Component/Button/default/latest"] = () => {
+globalThis._PL_.items["Component/Button/default/latest"] = (() => {
   // Your bundled code here
   return Button;
-}();
+})();
 ```
 
-### Manifest File
+### Release Files
 
-The build process generates a `manifest.json` file under the release key that maps module paths to their versions:
+The build process generates several files under the release key:
+
+**manifest.json** - Maps module paths to their versions:
 
 ```json
 {
@@ -91,7 +96,39 @@ The build process generates a `manifest.json` file under the release key that ma
 }
 ```
 
-This manifest enables the load utility to resolve the correct version of each module at runtime.
+**index.js** - Sets up the global structure for runtime loading:
+
+```javascript
+globalThis._PL_ = globalThis._PL_ || { items: {}, releases: {}, current: null };
+globalThis._PL_.current = "latest";
+globalThis._PL_.releases["latest"] = {
+  manifest: {
+    /* version mappings */
+  },
+  loaders: {
+    /* loader mappings */
+  },
+  globals: {
+    /* global variables */
+  },
+};
+```
+
+**loaders.js** - Contains the loader implementations for each type.
+
+These files work together to enable the load utility to automatically resolve modules and versions at runtime.
+
+## Global Structure
+
+The build utility creates a structured global object that organizes all your proxied code:
+
+- `globalThis._PL_.items` - Contains all built modules, accessible by their full path
+- `globalThis._PL_.releases[key].manifest` - Maps module paths to their versions
+- `globalThis._PL_.releases[key].loaders` - Maps type names to their loader implementations
+- `globalThis._PL_.releases[key].globals` - Contains global variables for the release
+- `globalThis._PL_.current` - Tracks the currently active release
+
+This structure is automatically set up by the build process and allows the load utility to seamlessly access modules without manual configuration.
 
 ## Release Key Management
 
