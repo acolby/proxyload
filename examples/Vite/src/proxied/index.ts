@@ -8,9 +8,6 @@ import { Proxied } from "./types/index";
 const ProxiedLoaded = load<Proxied>({
   host: "http://localhost:3012",
   key: "latest",
-  loaders: {
-    Component: "Loader/Component/default",
-  },
   globals: {
     JSX: JSX,
     React: React,

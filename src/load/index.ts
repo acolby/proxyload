@@ -1,4 +1,4 @@
-export default async function load<T>(params: {
+export default function load<T>(params: {
   host: string;
   key: string;
   globals: Record<string, any>;
@@ -8,18 +8,17 @@ export default async function load<T>(params: {
 
   const namespace = params.namespace || "_PL_";
 
-  // load the manifest
-  const manifest = await (
-    await fetch(`${host}/_releases/${params.key}/manifest.json`)
-  ).json();
-
-  console.log(manifest);
-
   // load globals
   for (const global in globals) {
     // @ts-ignore
     globalThis[global] = globals[global];
   }
+
+  // load release ->
+  const release_key = params.key;
+  const release = (globalThis as any)[namespace]?.releases?.[release_key];
+  const manifest: Record<string, string> = release?.manifest || {};
+  const loaders: Record<string, string> = release?.loaders || {};
 
   const memoized: Record<string, unknown> = {};
   const ProxyLoaded = new Proxy(
@@ -30,42 +29,22 @@ export default async function load<T>(params: {
           {},
           {
             get: (target, name: string) => {
-              const _id = `${type}/${name}`;
-              // @ts-ignore
-              const releaseLoaders = (globalThis as any)[namespace]?.releases?.[
-                params.key
-              ]?.loaders;
-              const loader_key = releaseLoaders?.[type];
-              // @ts-ignore
+              const loader_key = loaders?.[type];
               const loader = (globalThis as any)[namespace].items[loader_key];
+
               if (!loader) {
                 // @ts-ignore
                 console.error(`loader ${loader_key} not found or loaded`);
               }
 
+              const _id = `${release_key}/${type}/${name}`;
+
               if (!memoized[_id] || typeof window === "undefined") {
                 memoized[_id] = (props: Record<string, any>) => {
                   const variation = props.variation || "default";
+                  const version = manifest[`${type}/${name}/${variation}`];
 
                   // Try to get version from props first, then manifest, then fallback to "latest"
-                  let version = props.version;
-
-                  if (
-                    !version &&
-                    (globalThis as any)[namespace]?.releases?.[params.key]
-                      ?.manifest
-                  ) {
-                    const manifest = (globalThis as any)[namespace].releases[
-                      params.key
-                    ].manifest;
-                    const manifestKey = `${type}/${name}`;
-                    version = manifest[manifestKey];
-                  }
-
-                  if (!version) {
-                    version = "latest";
-                  }
-
                   return ((props) => {
                     return loader({
                       host,
@@ -86,6 +65,5 @@ export default async function load<T>(params: {
     }
   );
   // @ts-ignore
-  globalThis[namespace] = ProxyLoaded;
   return ProxyLoaded as T;
 }

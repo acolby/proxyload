@@ -107,6 +107,7 @@ export default async function build(params: BuildParams) {
     fs.writeFileSync(dest, code);
   }
 
+  // BUILD THE RELEASE FILES
   // now write the manifest.json
   const dest = path.resolve(
     params.dist,
@@ -120,34 +121,43 @@ export default async function build(params: BuildParams) {
   });
   fs.writeFileSync(dest, JSON.stringify(manifest, null, 2));
 
+  const loadersWithVersion = Object.entries(params.loaders).reduce(
+    (acc, [key, value]) => {
+      // @ts-ignore
+      acc[key] = `${value}/${manifest[value]}`;
+      return acc;
+    },
+    {}
+  );
+
   // write the release entry
   fs.writeFileSync(
     path.resolve(params.dist, "releases", params.key, "index.js"),
-    `globalThis._PL_ = globalThis._PL_ || { items: {}, releases: {}, current: null };
-globalThis._PL_.current = "${params.key}";
+    `globalThis._PL_ = globalThis._PL_ || { items: {}, releases: {} };
 globalThis._PL_.releases["${params.key}"] = {
-  manifest: ${JSON.stringify(manifest, null, 2)},
-  loaders: {
-${Object.entries(params.loaders)
-  .map(([key, value]) => `    "${key}": "${value}/${manifest[value]}"`)
-  .join(",\n")}
-  },
-  globals: ${JSON.stringify(params.globals, null, 2)},
+id: "${params.key}",
+manifest: ${JSON.stringify(manifest, null, 2)},
+loaders: ${JSON.stringify(loadersWithVersion, null, 2)},
+globals: ${JSON.stringify(params.globals, null, 2)},
 };
 `
   );
 
-  // write relese loaders
+  // write release loaders
+  let loadersCode =
+    "globalThis._PL_ = globalThis._PL_ || { items: {}, releases: {} };";
   for (const loader of Object.values(params.loaders)) {
     const entry = loader;
     const version = manifest[entry];
     const src = `${params.dist}/items/${entry}/${version}.js`;
     const code = fs.readFileSync(src, "utf8");
-    fs.writeFileSync(
-      path.resolve(params.dist, "releases", params.key, "loaders.js"),
-      code
-    );
+    loadersCode += code;
   }
+
+  fs.writeFileSync(
+    path.resolve(params.dist, "releases", params.key, "loaders.js"),
+    loadersCode
+  );
 
   return manifest;
 }

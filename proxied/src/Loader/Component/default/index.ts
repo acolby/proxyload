@@ -19,9 +19,9 @@ const Loader: Interface = (params) => {
     }, []);
 
     // @ts-ignore
-    if (globalThis._PL_ITEMS_[itemKey]) {
+    if (globalThis?._PL_?.items?.[itemKey]) {
       // @ts-ignore
-      const Comp = globalThis._PL_ITEMS_[itemKey];
+      const Comp = globalThis?._PL_?.items?.[itemKey];
       return Comp(props);
     }
 
