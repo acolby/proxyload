@@ -145,7 +145,7 @@ async function _enhanceInterfaceFile(params: {
 
     // Create the component type
     const componentType = `export type Interface = (
-  props: Params & { variation?: Variations; version?: string }
+  props: Params & { variation?: Variations; }
 ) => Returns;`;
 
     // Combine the original interface with the new types

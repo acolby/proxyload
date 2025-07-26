@@ -7,10 +7,11 @@ import { Proxied } from "./types/index";
 
 const ProxiedLoaded = proxy<Proxied>({
   host: "http://localhost:3012",
-  globals: {
-    JSX: JSX,
-    React: React,
+  dependencies: {
+    "react/jsx-runtime": JSX,
+    react: React,
   },
+  proxyImport: "@proxied",
 });
 
 export default ProxiedLoaded;

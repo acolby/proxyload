@@ -1,6 +1,6 @@
 {
   "name": "@acolby/proxyload",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "A structural standard and toolkit for organizing, typing, loading, and versioning modular TypeScript code at scale. Arbiter enforces a strict filesystem convention for clarity, repeatability, and experimentation in large projects.",
   "type": "module",
   "scripts": {
