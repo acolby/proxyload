@@ -1,55 +1,60 @@
 # Load Utility
 
-A utility function that creates a nested proxy structure for dynamically loading and executing code based on type and name hierarchies.
-
-## Overview
-
-The `load` function creates a two-level proxy system where:
-
-- First level: **Type** (e.g., "Component", "Service", "Util")
-- Second level: **Name** (e.g., "Button", "AuthService", "formatDate")
-
-The function automatically retrieves loader mappings and manifest data from the release object, simplifying the configuration.
+Server-side utility for loading release manifests and preloading all associated modules. Must be called before using the `proxy` utility on the server.
 
 ## Usage
 
 ```typescript
-import load from "./index";
+import load from "@acolby/proxyload/load";
 
-const proxied = load({
-  host: "https://example.com",
-  globals: {
-    // Global variables available to all loaded modules
-  },
-});
-
-// Usage examples:
-
-proxied.Component.Button({ variation: "primary" });
-const result = await proxied.Util.formatDate({ variation: "short" });
+// Load release and all its modules
+const release = await load("https://example.com", "latest");
 ```
 
-## Parameters
+## API
 
-- `host`: Base URL for loading resources
-- `globals`: Global variables to make available to loaded modules
-- `namespace`: Optional custom namespace (defaults to "_PL_")
+### `load(host: string, key: string): Promise<Release>`
+
+- **host**: Base URL of Proxyload server
+- **key**: Release key (e.g., "latest", "v1.0.0")
+- **Returns**: Release object with manifest data
 
 ## How It Works
 
-1. Creates a nested proxy structure: `Proxied[type][name]`
-2. Automatically retrieves loader mappings from `globalThis._PL_.releases[key].loaders`
-3. Retrieves version information from `globalThis._PL_.releases[key].manifest`
-4. Executes the appropriate loader with host, name, type, version, and variation parameters
-5. Makes the proxy available globally via the namespace reference
+1. Validates server-side execution
+2. Initializes global `_PL_` namespace if needed
+3. Loads release manifest from `${host}/releases/${key}/server.js`
+4. Preloads all modules in the manifest that aren't already cached
+5. Sets the release as current active
 
-## Global Structure
+## Integration
 
-The load utility works with the following global structure created by the build process:
+```typescript
+// 1. Load release first
+await load("https://example.com", "latest");
 
-- `globalThis._PL_.items` - Contains all loaded modules
-- `globalThis._PL_.releases[key].loaders` - Contains loader mappings for each type
-- `globalThis._PL_.releases[key].manifest` - Contains version mappings for modules
-- `globalThis._PL_.releases[key].globals` - Contains global variables for the release
+// 2. Then use proxy utility
+const proxied = proxy({
+  host: "https://example.com",
+  globals: { React: require("react") },
+});
+```
 
-This structure is automatically set up by the build utility and allows for seamless runtime loading without manual configuration.
+## Error Handling
+
+- Throws if called in browser environment
+- Network failures should be wrapped in try-catch
+- Missing modules will be logged but won't fail the load
+
+## Global State
+
+Initializes `globalThis._PL_` with:
+
+```typescript
+{
+  items: {}, // Loaded modules cache
+  releases: {}, // Release manifests
+  current: "", // Current active release key
+  proxy: null, // Proxy object (set by proxy utility)
+}
+```

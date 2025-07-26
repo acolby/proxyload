@@ -1,19 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { build as esbuild, Plugin, BuildOptions } from "esbuild";
-
-export interface BuildParams {
-  dir: string;
-  dist: string;
-  globals: Record<string, string>;
-  key: string;
-  loaders: Record<string, string>;
-  plugins?: Plugin[];
-  esbuildOptions?: Partial<BuildOptions>;
-  version?: string;
-  minify?: boolean;
-}
+import { build as esbuild } from "esbuild";
+import { BuildParams, Release, ReleasesData } from "../types";
 
 /**
  * Example usage:
@@ -32,7 +21,6 @@ export interface BuildParams {
  *     sourcemap: true,
  *   },
  *   minify: true,
- *   version: 'v1.0.0-{hash}' // {hash} will be replaced with the actual build hash
  * });
  * ```
  */
@@ -41,8 +29,15 @@ export default async function build(params: BuildParams) {
   // Ensure the dist directory exists
   fs.mkdirSync(params.dist, { recursive: true });
 
+  const namespace = "_PL_";
   const entryPoints = await _getEntryPoints(params);
-  const manifest: Record<string, string> = {};
+
+  const hashes: Record<string, string> = {};
+
+  const globals = {
+    ...params.globals,
+    [params.proxy]: `${namespace}.proxy`,
+  };
 
   for (const entryPoint of entryPoints) {
     const result = await esbuild({
@@ -55,7 +50,7 @@ export default async function build(params: BuildParams) {
       target: "esnext",
 
       treeShaking: true,
-      external: Object.keys(params.globals),
+      external: Object.keys(globals),
 
       // @TODO: minify
       minify: params.minify ?? false,
@@ -69,15 +64,9 @@ export default async function build(params: BuildParams) {
     });
 
     // I need to URL sanitize the hash
-    const hash = result.outputFiles?.[0]?.hash.replace(/[^a-zA-Z0-9]/g, "-");
-
-    let version = params.version || "HASH";
-
-    if (hash) {
-      version = version.replace("HASH", hash);
-    }
-
-    manifest[entryPoint.split("/").slice(0, -1).join("/")] = version;
+    const hash =
+      result.outputFiles?.[0]?.hash.replace(/[^a-zA-Z0-9]/g, "-") || "";
+    hashes[entryPoint.split("/").slice(0, -1).join("/")] = hash;
 
     if (!result.outputFiles || result.outputFiles.length === 0) {
       throw new Error(
@@ -88,15 +77,15 @@ export default async function build(params: BuildParams) {
     let code = result.outputFiles[0].text;
 
     // rewrite globals
-    code = _rewriteImports(code, params.globals);
+    code = _rewriteImports(code, globals);
     // rewrite exports
     code = code.replace(
       /export\s*{\s*([a-zA-Z_$][\w$]*)\s+as\s+default\s*};?/,
       "return $1;"
     );
 
-    const ref = `${path.dirname(entryPoint)}/${version}`;
-    code = `globalThis._PL_.items["${ref}"] = (() => { ${code} })();`;
+    const ref = `${path.dirname(entryPoint)}/${hash}`;
+    code = `globalThis.${namespace}.items["${ref}"] = () => { ${code} };`;
 
     const dest = `${params.dist}/items/${ref}.js`;
     // write to dist making sure the dir exists
@@ -108,58 +97,98 @@ export default async function build(params: BuildParams) {
   }
 
   // BUILD THE RELEASE FILES
-  // now write the manifest.json
-  const dest = path.resolve(
-    params.dist,
-    "releases",
-    params.key,
-    "manifest.json"
-  );
+  // now write the hashes.json
+  const dest = path.resolve(params.dist, "releases", params.key, "hashes.json");
   // make sure the dir exists
   fs.mkdirSync(path.dirname(dest), {
     recursive: true,
   });
-  fs.writeFileSync(dest, JSON.stringify(manifest, null, 2));
+  fs.writeFileSync(dest, JSON.stringify(hashes, null, 2));
 
-  const loadersWithVersion = Object.entries(params.loaders).reduce(
+  const loadersWithHash = Object.entries(params.loaders).reduce(
     (acc, [key, value]) => {
-      // @ts-ignore
-      acc[key] = `${value}/${manifest[value]}`;
+      acc[key] = `${value}/${hashes[value]}`;
       return acc;
     },
-    {}
+    {} as Record<string, string>
   );
 
-  // write the release entry
+  const release: Release = {
+    id: params.key,
+    hashes: hashes,
+    loaders: loadersWithHash,
+    globals: globals,
+  };
+
+  // --- Update top-level releases.json ---
+  const releasesJsonPath = path.resolve(params.dist, "releases.json");
+  let releasesData: ReleasesData = { releases: {} };
+  if (fs.existsSync(releasesJsonPath)) {
+    try {
+      releasesData = JSON.parse(fs.readFileSync(releasesJsonPath, "utf8"));
+    } catch (e) {
+      // If file is corrupted, re-initialize
+      releasesData = { releases: {} };
+    }
+  }
+  const now = new Date().toISOString();
+  if (releasesData.releases[params.key]) {
+    // Update only updatedAt
+    releasesData.releases[params.key].updatedAt = now;
+  } else {
+    // New release: set both createdAt and updatedAt
+    releasesData.releases[params.key] = { createdAt: now, updatedAt: now };
+  }
+  fs.writeFileSync(releasesJsonPath, JSON.stringify(releasesData, null, 2));
+
+  // Add createdAt and updatedAt to the release object
+  const { createdAt, updatedAt } = releasesData.releases[params.key];
+  release.createdAt = createdAt;
+  release.updatedAt = updatedAt;
+
+  // write the server release entry
   fs.writeFileSync(
-    path.resolve(params.dist, "releases", params.key, "index.js"),
-    `globalThis._PL_ = globalThis._PL_ || { items: {}, releases: {} };
-globalThis._PL_.releases["${params.key}"] = {
-id: "${params.key}",
-manifest: ${JSON.stringify(manifest, null, 2)},
-loaders: ${JSON.stringify(loadersWithVersion, null, 2)},
-globals: ${JSON.stringify(params.globals, null, 2)},
-};
+    path.resolve(params.dist, "releases", params.key, "server.js"),
+    `globalThis.${namespace} = globalThis.${namespace} || { items: {}, releases: {} };
+globalThis.${namespace}.releases["${params.key}"] = ${JSON.stringify(
+      release,
+      null,
+      2
+    )};
 `
   );
 
-  // write release loaders
-  let loadersCode =
-    "globalThis._PL_ = globalThis._PL_ || { items: {}, releases: {} };";
+  // write the server release entry
+  let clientCode = `globalThis.${namespace} = globalThis.${namespace} || { items: {}, releases: {} };
+globalThis.${namespace}.releases["${params.key}"] = ${JSON.stringify(
+    release,
+    null,
+    2
+  )};
+globalThis.${namespace}.current = "${params.key}";
+`;
+
   for (const loader of Object.values(params.loaders)) {
     const entry = loader;
-    const version = manifest[entry];
-    const src = `${params.dist}/items/${entry}/${version}.js`;
+    const hash = hashes[entry];
+    const src = `${params.dist}/items/${entry}/${hash}.js`;
     const code = fs.readFileSync(src, "utf8");
-    loadersCode += code;
+    clientCode += "\n" + code;
   }
 
   fs.writeFileSync(
-    path.resolve(params.dist, "releases", params.key, "loaders.js"),
-    loadersCode
+    path.resolve(params.dist, "releases", params.key, "client.js"),
+    clientCode
   );
 
-  return manifest;
+  const { hashes: _, ...meta } = release;
+
+  fs.writeFileSync(
+    path.resolve(params.dist, "releases", params.key, "meta.json"),
+    JSON.stringify(meta, null, 2)
+  );
+
+  return hashes;
 }
 
 async function _getEntryPoints(params: Pick<BuildParams, "dir">) {

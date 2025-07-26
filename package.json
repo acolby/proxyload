@@ -1,17 +1,27 @@
 {
   "name": "@acolby/proxyload",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "A structural standard and toolkit for organizing, typing, loading, and versioning modular TypeScript code at scale. Arbiter enforces a strict filesystem convention for clarity, repeatability, and experimentation in large projects.",
   "type": "module",
+  "scripts": {
+    "build": "tsx ./scripts/build.ts",
+    "prepublishOnly": "npm run build",
+    "postinstall": "chmod +x ./dist/manifest/cli.js",
+    "manifest": "tsx ./src/manifest/cli.ts"
+  },
+  "bin": {
+    "proxyload": "./dist/manifest/cli.js",
+    "manifest": "./dist/manifest/cli.js"
+  },
   "files": [
     "dist"
   ],
-  "main": "./dist/load/index.js",
-  "types": "./dist/load/index.d.ts",
+  "main": "./dist/proxy/index.js",
+  "types": "./dist/proxy/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/load/index.js",
-      "types": "./dist/load/index.d.ts"
+      "import": "./dist/proxy/index.js",
+      "types": "./dist/proxy/index.d.ts"
     },
     "./barrel": {
       "import": "./dist/barrel/index.js",
@@ -20,6 +30,10 @@
     "./build": {
       "import": "./dist/build/index.js",
       "types": "./dist/build/index.d.ts"
+    },
+    "./proxy": {
+      "import": "./dist/proxy/index.js",
+      "types": "./dist/proxy/index.d.ts"
     },
     "./load": {
       "import": "./dist/load/index.js",
@@ -32,15 +46,15 @@
     "./typesync": {
       "import": "./dist/typesync/index.js",
       "types": "./dist/typesync/index.d.ts"
+    },
+    "./manifest": {
+      "import": "./dist/manifest/index.js",
+      "types": "./dist/manifest/index.d.ts"
     }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/acolby/proxyload.git"
-  },
-  "scripts": {
-    "build": "tsx ./scripts/build.ts",
-    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "TypeScript",
@@ -62,5 +76,11 @@
     "esbuild": "^0.25.5",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@types/inquirer": "^9.0.8",
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "inquirer": "^12.8.2"
   }
 }

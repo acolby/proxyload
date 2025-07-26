@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsx ./scripts/build.ts",
     "start": "tsx ./server/index.ts",
-    "dev": "tsx watch ./server/index.ts & tsx watch --include=./src/**/**/* ./scripts/build.ts"
+    "dev": "tsx watch ./server/index.ts & tsx watch --include=./src/**/**/* ./scripts/build.ts",
+    "manifest": "tsx ../src/manifest/cli.ts inquire"
   },
   "author": "",
   "license": "ISC",

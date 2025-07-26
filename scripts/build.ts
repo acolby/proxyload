@@ -14,6 +14,10 @@ const entryPoints = Object.entries(exports)
     return `src/${key}/index.ts`;
   });
 
+// Add CLI files
+entryPoints.push("src/manifest/cli.ts");
+entryPoints.push("src/manifest/inquire.ts");
+
 rmSync("dist", { recursive: true, force: true });
 
 await build({

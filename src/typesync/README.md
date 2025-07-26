@@ -133,7 +133,7 @@ TypeSync works seamlessly with other Proxyload utilities:
 
 - **TypeGen**: Provides the source `types.json` under `_releases/{key}/types.json` that TypeSync consumes
 - **Build Utility**: Generates `manifest.json` under the same release key structure
-- **Load Utility**: Ensures runtime-loaded modules have proper type definitions
+- **Proxy Utility**: Ensures runtime-loaded modules have proper type definitions
 - **Barrel Utility**: Generates type-safe interfaces from synchronized types
 
 ## 🚨 Error Handling

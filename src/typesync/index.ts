@@ -1,13 +1,10 @@
 import fs from "fs";
 import path from "path";
+import { TypesyncParams } from "../types";
 
-export default async function typesync(params: {
-  dest: string;
-  host: string;
-  key: string;
-}) {
+export default async function typesync(params: TypesyncParams) {
   const { host, dest, key } = params;
-  const types = await fetch(`${host}/_releases/${key}/types.json`);
+  const types = await fetch(`${host}/releases/${key}/types.json`);
   const typesJson = await types.json();
 
   // for each item make the dir relative to the dest and write the contents of the file to the dir

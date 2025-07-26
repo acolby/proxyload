@@ -1,69 +1,51 @@
-export default function load<T>(params: {
-  host: string;
-  key: string;
-  globals: Record<string, any>;
-  namespace?: string;
-}) {
-  const { host, globals } = params;
+import { Release } from "../types";
 
-  const namespace = params.namespace || "_PL_";
-
-  // load globals
-  for (const global in globals) {
-    // @ts-ignore
-    globalThis[global] = globals[global];
+async function load(host: string, key: string): Promise<Release> {
+  if (typeof window !== "undefined") {
+    throw new Error("Preload is only available on the server");
   }
 
-  // load release ->
-  const release_key = params.key;
-  const release = (globalThis as any)[namespace]?.releases?.[release_key];
-  const manifest: Record<string, string> = release?.manifest || {};
-  const loaders: Record<string, string> = release?.loaders || {};
+  const namespace = `_PL_`;
 
-  const memoized: Record<string, unknown> = {};
-  const ProxyLoaded = new Proxy(
-    {},
-    {
-      get: (target, type: string) => {
-        return new Proxy(
-          {},
-          {
-            get: (target, name: string) => {
-              const loader_key = loaders?.[type];
-              const loader = (globalThis as any)[namespace].items[loader_key];
+  // Initialize the global state if it doesn't exist
+  if (!globalThis[namespace]) {
+    globalThis[namespace] = {
+      items: {},
+      releases: {},
+      current: "",
+      proxy: null,
+    };
+  }
 
-              if (!loader) {
-                // @ts-ignore
-                console.error(`loader ${loader_key} not found or loaded`);
-              }
+  // For now we fetch the server release information each load
+  await loadModule(host, `releases/${key}/server`);
 
-              const _id = `${release_key}/${type}/${name}`;
+  // load everything in the manifest since we're on the server
+  const hashes = globalThis[namespace].releases[key]?.hashes || {};
 
-              if (!memoized[_id] || typeof window === "undefined") {
-                memoized[_id] = (props: Record<string, any>) => {
-                  const variation = props.variation || "default";
-                  const version = manifest[`${type}/${name}/${variation}`];
-
-                  // Try to get version from props first, then manifest, then fallback to "latest"
-                  return ((props) => {
-                    return loader({
-                      host,
-                      name,
-                      type,
-                      version,
-                      variation,
-                    })(props);
-                  })(props);
-                };
-              }
-
-              return memoized[_id];
-            },
-          }
-        );
-      },
-    }
+  await Promise.all(
+    Object.entries(hashes).map(async ([key, hash]) => {
+      // fetch all items that are in the hashes if they are not already loaded
+      const itemKey = `${key}/${hash}`;
+      if (!globalThis[namespace].items[itemKey]) {
+        await loadModule(host, `items/${itemKey}`);
+      }
+    })
   );
-  // @ts-ignore
-  return ProxyLoaded as T;
+
+  function loadModule(host: string, item: string): Promise<void> {
+    return fetch(`${host}/${item}.js`, { cache: "no-store" })
+      .then((res) => res.text())
+      .then((text) => {
+        // eslint-disable-next-line no-new-func
+        new Function(text)();
+      });
+  }
+
+  // set the current release
+  globalThis[namespace].current = key;
+
+  return globalThis[namespace].releases[key];
 }
+
+export default load;

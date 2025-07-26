@@ -1,20 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-
-import Proxied from "./proxied";
+import Home from "./home";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Proxied.Component.EmailForm
-      onSubmit={() => {
-        console.log("submitted");
-      }}
-    />
-    <Proxied.Component.Button
-      text="Click me"
-      onClick={() => {
-        console.log("clicked");
-      }}
-    />
+    <Home />
   </React.StrictMode>
 );

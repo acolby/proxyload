@@ -127,7 +127,7 @@ TypeGen works seamlessly with other Proxyload utilities:
 
 - **Barrel Utility**: Enhances interface files with variation types before TypeGen processes them
 - **Build Utility**: Uses exposed interface definitions for type-safe builds and generates manifest.json under the same release key
-- **Load Utility**: Consumes interface definitions for runtime type checking
+- **Proxy Utility**: Consumes interface definitions for runtime type checking
 - **TypeSync Utility**: Fetches type definitions from `_releases/{key}/types.json` endpoints
 
 ## 📝 Example Output

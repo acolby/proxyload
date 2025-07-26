@@ -1,15 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import { TypegenParams } from "../types";
 
 /*
 goes through the target directory and finds all interface files and exposes them as a JSON object
 */
 
-export default async function typegen(params: {
-  dir: string;
-  dist: string;
-  key: string;
-}) {
+export default async function typegen(params: TypegenParams) {
   // Ensure the dist directory exists
   const dest = path.resolve(params.dist, "releases", params.key);
   fs.mkdirSync(dest, { recursive: true });
@@ -27,7 +24,7 @@ export default async function typegen(params: {
   );
 }
 
-async function _findInterfaceFiles(params: { dir: string }) {
+async function _findInterfaceFiles(params: Pick<TypegenParams, "dir">) {
   // find dir names in dir
   const typeNames = fs
     .readdirSync(params.dir)

@@ -4,18 +4,19 @@ The build module provides the core functionality for building Proxyload-compatib
 
 ## Overview
 
-This module takes your proxied directory structure and builds each entry point into individual JavaScript files that can be dynamically loaded at runtime. Each built file follows the Proxyload standard of being assigned to the global namespace. The build process also generates a manifest file organized under release keys for version management.
+This module takes your proxied directory structure and builds each entry point into individual JavaScript files that can be dynamically loaded at runtime. Each built file follows the Proxyload standard of being assigned to the global namespace. The build process also generates a hashes file organized under release keys for version management.
 
 ## Basic Usage
 
 ```typescript
-import build from "./build";
+import build from "@acolby/proxyload/src/build";
 
 await build({
   dir: "./src/proxied",
   dist: "./dist",
   globals: { react: "React" },
   key: "latest", // Release key for organizing build artifacts
+  loaders: { Component: "Component/Button/default" },
 });
 ```
 
@@ -26,22 +27,23 @@ The build function accepts the following configuration:
 - `dir`: Source directory containing your proxied code structure
 - `dist`: Output directory for built files
 - `globals`: Map of module specifiers to global variable names
-- `key`: Release key for organizing build artifacts under `_releases/{key}/manifest.json`
+- `key`: Release key for organizing build artifacts under `releases/{key}/hashes.json`
 - `plugins`: Optional esbuild plugins
 - `esbuildOptions`: Optional esbuild configuration overrides
-- `version`: Version string (defaults to "latest")
 - `minify`: Whether to minify output (defaults to false)
+- `loaders`: Map of type names to loader entry points
+- `version`: Version string (defaults to esbuild version, can be overridden)
 
 ## Example with Plugins
 
 ```typescript
-import build from "./build";
+import build from "@acolby/proxyload/src/build";
 import { cssModulesPlugin } from "esbuild-css-modules-plugin";
 
 await build({
   dir: "./src/proxied",
   dist: "./dist",
-  globals: { react: "React" },
+  globals: { react: "React", "react/jsx-runtime": "JSX" },
   key: "v1.0.0", // Release key for this build
   plugins: [cssModulesPlugin()],
   esbuildOptions: {
@@ -49,13 +51,14 @@ await build({
     sourcemap: true,
   },
   minify: true,
-  version: "v1.0.0",
+  loaders: { Component: "Component/Button/default" },
+  // version: "custom-version-string", // Optional: override default version
 });
 ```
 
 ## Output Structure
 
-Built files follow the pattern: `[TYPE]/[NAME]/[VARIATION]/[VERSION].js`
+Built files follow the pattern: `items/[TYPE]/[NAME]/[VARIATION]/[VERSION].js`
 
 The build process creates the following structure:
 
@@ -66,17 +69,17 @@ dist/
 │       └── [NAME]/
 │           └── [VARIATION]/
 │               └── [VERSION].js
-└── _releases/
+└── releases/
     └── [KEY]/
-        ├── manifest.json
-        ├── index.js
-        └── loaders.js
+        ├── hashes.json
+        ├── server.js
+        └── client.js
 ```
 
 Each built file contains code that assigns the module to the global namespace:
 
 ```javascript
-globalThis._PL_.items["Component/Button/default/latest"] = (() => {
+globalThis._PL_.items["Component/Button/default/esbuild-version"] = (() => {
   // Your bundled code here
   return Button;
 })();
@@ -86,7 +89,7 @@ globalThis._PL_.items["Component/Button/default/latest"] = (() => {
 
 The build process generates several files under the release key:
 
-**manifest.json** - Maps module paths to their versions:
+**hashes.json** - Maps module paths to their versions:
 
 ```json
 {
@@ -96,13 +99,13 @@ The build process generates several files under the release key:
 }
 ```
 
-**index.js** - Sets up the global structure for runtime loading:
+**server.js** and **client.js** - Set up the global structure for runtime loading:
 
 ```javascript
 globalThis._PL_ = globalThis._PL_ || { items: {}, releases: {}, current: null };
-globalThis._PL_.current = "latest";
 globalThis._PL_.releases["latest"] = {
-  manifest: {
+  id: "latest",
+  hashes: {
     /* version mappings */
   },
   loaders: {
@@ -114,21 +117,27 @@ globalThis._PL_.releases["latest"] = {
 };
 ```
 
-**loaders.js** - Contains the loader implementations for each type.
-
-These files work together to enable the load utility to automatically resolve modules and versions at runtime.
+These files work together to enable the proxy utility to automatically resolve modules and versions at runtime.
 
 ## Global Structure
 
 The build utility creates a structured global object that organizes all your proxied code:
 
 - `globalThis._PL_.items` - Contains all built modules, accessible by their full path
-- `globalThis._PL_.releases[key].manifest` - Maps module paths to their versions
+- `globalThis._PL_.releases[key].hashes` - Maps module paths to their versions
 - `globalThis._PL_.releases[key].loaders` - Maps type names to their loader implementations
 - `globalThis._PL_.releases[key].globals` - Contains global variables for the release
 - `globalThis._PL_.current` - Tracks the currently active release
 
-This structure is automatically set up by the build process and allows the load utility to seamlessly access modules without manual configuration.
+This structure is automatically set up by the build process and allows the proxy utility to seamlessly access modules without manual configuration.
+
+## Import Rewriting
+
+When building, any import whose module specifier matches a key in the `globals` map will be rewritten to reference `globalThis.<GLOBAL>`. For example, `import React from "react";` becomes `var React = globalThis.React;` in the output. This enables runtime injection of dependencies.
+
+## Versioning
+
+By default, the version used in output paths is the esbuild version. You can override this by passing a custom `version` in the build options.
 
 ## Release Key Management
 
@@ -144,7 +153,7 @@ The release key system enables:
 The build utility works seamlessly with other Proxyload utilities:
 
 - **TypeGen**: Generates `types.json` under the same release key structure
-- **Load Utility**: Uses the manifest to resolve module versions at runtime
+- **Proxy Utility**: Uses the hashes to resolve module versions at runtime
 - **TypeSync**: Fetches type definitions from the corresponding release key
 
 For more details on the Proxyload specification and directory structure, see the [main README](../../README.md).

@@ -1,10 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import { BarrelParams, InterfaceFile } from "../types";
 
-export default async function barrel(params: {
-  exclude: string[];
-  dir: string;
-}) {
+export default async function barrel(params: BarrelParams) {
   const { dir } = params;
   const types = fs
     .readdirSync(dir)
@@ -16,7 +14,7 @@ export default async function barrel(params: {
       .readdirSync(path.resolve(dir, type))
       .filter((name) => !name.includes("."));
 
-    const items = names.map((name) => {
+    const items: InterfaceFile[] = names.map((name) => {
       const variations = fs
         .readdirSync(path.resolve(dir, type, name))
         .filter((name) => !name.includes("."));
@@ -69,10 +67,7 @@ async function _writeFileIfChanged(
   }
 }
 
-function _createBarrelFile(params: {
-  type: string;
-  items: { name: string; variations: string[] }[];
-}) {
+function _createBarrelFile(params: { type: string; items: InterfaceFile[] }) {
   const { items } = params;
   const imports: string[] = [];
 
@@ -114,7 +109,7 @@ ${imports.join("\n")}
 async function _enhanceInterfaceFile(params: {
   dir: string;
   type: string;
-  item: { name: string; variations: string[] };
+  item: InterfaceFile;
 }) {
   const { dir, type, item } = params;
   const interfacePath = path.resolve(dir, type, item.name, "interface.ts");

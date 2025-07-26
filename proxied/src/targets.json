@@ -1,0 +1,6 @@
+{
+  "vite": {
+    "name": "vite",
+    "environments": ["prod", "dev"]
+  }
+}
