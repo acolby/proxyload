@@ -14,7 +14,8 @@ import { BuildParams, Release, ReleasesData } from "../types";
  * await build({
  *   dir: './src',
  *   dist: './dist',
- *   globals: { 'react': 'React' },
+ *   ** Override import statements that are passed in as dependencies at runtime
+ *   dependencies: { 'react': { * left empty for now * } },
  *   plugins: [cssModulesPlugin()],
  *   esbuildOptions: {
  *     target: 'es2020',
@@ -34,9 +35,9 @@ export default async function build(params: BuildParams) {
 
   const hashes: Record<string, string> = {};
 
-  const globals = {
-    ...params.globals,
-    [params.proxy]: `${namespace}.proxy`,
+  const dependencies = {
+    ...params.dependencies,
+    [params.proxyRef]: {},
   };
 
   for (const entryPoint of entryPoints) {
@@ -50,7 +51,7 @@ export default async function build(params: BuildParams) {
       target: "esnext",
 
       treeShaking: true,
-      external: Object.keys(globals),
+      external: Object.keys(dependencies),
 
       // @TODO: minify
       minify: params.minify ?? false,
@@ -77,7 +78,7 @@ export default async function build(params: BuildParams) {
     let code = result.outputFiles[0].text;
 
     // rewrite globals
-    code = _rewriteImports(code, globals);
+    code = _rewriteImports(code, Object.keys(dependencies));
     // rewrite exports
     code = code.replace(
       /export\s*{\s*([a-zA-Z_$][\w$]*)\s+as\s+default\s*};?/,
@@ -85,7 +86,7 @@ export default async function build(params: BuildParams) {
     );
 
     const ref = `${path.dirname(entryPoint)}/${hash}`;
-    code = `globalThis.${namespace}.items["${ref}"] = () => { ${code} };`;
+    code = `globalThis.${namespace}.items["${ref}"] = (_DI_PROXY_) => { ${code} };`;
 
     const dest = `${params.dist}/items/${ref}.js`;
     // write to dist making sure the dir exists
@@ -117,7 +118,7 @@ export default async function build(params: BuildParams) {
     id: params.key,
     hashes: hashes,
     loaders: loadersWithHash,
-    globals: globals,
+    dependencies: dependencies,
   };
 
   // --- Update top-level releases.json ---
@@ -234,25 +235,22 @@ async function _getEntryPoints(params: Pick<BuildParams, "dir">) {
  *
  *   import { jsx, jsxs } from "react/jsx-runtime";
  *   // ────────────────▼──────────────────────────
- *   const { jsx, jsxs } = globalThis.JSX;
+ *   const { jsx, jsxs } = _DI_PROXY_["react/jsx-runtime"];
  *
  *   import { Component } from "@proxied";
  *   // ───────▼──────────────────────────────────
- *   const { Component } = globalThis._PROXIED_;
+ *   const { Component } = _DI_PROXY_["@proxied"];
  *
  * @param code  The original file contents
  * @param remap A map from module specifier ➜ global slot
  */
-export function _rewriteImports(
-  code: string,
-  remap: Record<string, string>
-): string {
+export function _rewriteImports(code: string, remap: string[]): string {
   return code
     .replace(
       /import\s*{([^}]+)}\s*from\s*["']([^"']+)["'];?/g,
       (full, imports, source) => {
-        const global = remap[source];
-        if (!global) return full;
+        const inject = remap.find((dep) => source.includes(dep));
+        if (!inject) return full;
 
         // Transform import names to handle "as" syntax
         const transformedImports = imports
@@ -271,16 +269,16 @@ export function _rewriteImports(
           })
           .join(", ");
 
-        return `var { ${transformedImports} } = globalThis.${global};`;
+        return `var { ${transformedImports} } = _DI_PROXY_["${inject}"];`;
       }
     )
     .replace(
       /import\s+([a-zA-Z_$][\w$]*)\s*from\s*["']([^"']+)["'];?/g,
       (full, name, source) => {
-        const global = remap[source];
-        if (!global) return full;
+        const inject = remap.find((dep) => source.includes(dep));
+        if (!inject) return full;
 
-        return `var ${name} = globalThis.${global};`;
+        return `var ${name} = _DI_PROXY_["${inject}"];`;
       }
     );
 }

@@ -4,7 +4,7 @@ export type Release = {
   id: string;
   hashes: Record<string, string>;
   loaders: Record<string, string>;
-  globals: Record<string, string>;
+  dependencies: Record<string, { version?: string }>;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -15,7 +15,7 @@ export type ProxyState = {
   releases: Record<string, Release>;
   items: Items;
   current: string;
-  proxy: any;
+  namespace: string;
 };
 
 // Global declaration for TypeScript
@@ -27,9 +27,9 @@ declare global {
 export type BuildParams = {
   dir: string;
   dist: string;
-  globals: Record<string, string>;
+  dependencies: Record<string, { version?: string }>;
+  proxyRef: string;
   // the internal global reference to the proxy for example "@proxied"
-  proxy: string;
   key: string;
   loaders: Record<string, string>;
   plugins?: Plugin[];
@@ -51,8 +51,8 @@ export type TypesyncParams = {
 
 export type ProxyParams<T = any> = {
   host: string;
-  globals: Record<string, any>;
-  ref?: string;
+  dependencies: Record<string, any>;
+  proxyImport?: string;
 };
 
 export type BarrelParams = {
@@ -86,4 +86,14 @@ export type Target = {
 
 export type TargetsFile = {
   [targetName: string]: Target;
+};
+
+export type LoaderParams = {
+  host: string;
+  name: string;
+  type: string;
+  hash: string;
+  variation: string;
+  namespace: string;
+  dependencies: Record<string, any>;
 };

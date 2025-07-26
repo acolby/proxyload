@@ -1,14 +1,16 @@
-import { ProxyParams, Release } from "../types";
+import { LoaderParams, ProxyParams, Release } from "../types";
 
 export default function proxy<T>(params: ProxyParams<T>) {
-  const { host, globals, ref } = params;
+  const { host, proxyImport = "@proxied" } = params;
 
   const namespace = "_PL_";
 
-  // load globals
-  for (const global in globals) {
-    (globalThis as any)[global] = globals[global];
-  }
+  // injected dependencies
+  const dependencies = {
+    ...params.dependencies,
+    // this is the proxy reference
+    [`${proxyImport}`]: {},
+  };
 
   const memoized: Record<string, unknown> = {};
   const ProxyLoaded = new Proxy(
@@ -37,10 +39,11 @@ export default function proxy<T>(params: ProxyParams<T>) {
               if (!memoized[_id] || typeof window === "undefined") {
                 memoized[_id] = (props: Record<string, any>) => {
                   const variation = props.variation || "default";
-                  const version =
-                    release.hashes[`${type}/${name}/${variation}`];
+                  const hash = release.hashes[`${type}/${name}/${variation}`];
 
-                  const loader = loader_factory();
+                  const loader = loader_factory(dependencies) as (
+                    params: LoaderParams
+                  ) => any;
 
                   // Try to get version from props first, then hashes, then fallback to "latest"
                   return ((props) => {
@@ -48,8 +51,10 @@ export default function proxy<T>(params: ProxyParams<T>) {
                       host,
                       name,
                       type,
-                      version,
+                      hash,
                       variation,
+                      namespace,
+                      dependencies,
                     })(props);
                   })(props);
                 };
@@ -84,6 +89,6 @@ The server script must be loaded before the Proxyload script.
     return release;
   }
 
-  globalThis[namespace].proxy = ProxyLoaded;
+  dependencies[proxyImport] = ProxyLoaded;
   return ProxyLoaded as T;
 }

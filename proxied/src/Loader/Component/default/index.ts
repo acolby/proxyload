@@ -1,12 +1,11 @@
 import type { Interface } from "../interface";
+import React from "react";
 
 const Loader: Interface = (params) => {
   return (props) => {
-    const React = globalThis.React;
-
     const [loaded, setLoaded] = React.useState(false);
 
-    const itemKey = `${params.type}/${params.name}/${params.variation}/${params.version}`;
+    const itemKey = `${params.type}/${params.name}/${params.variation}/${params.hash}`;
 
     React.useEffect(() => {
       // add script tag to head pointing to the host + /loader/component/default/latest.js
@@ -21,7 +20,7 @@ const Loader: Interface = (params) => {
     // @ts-ignore
     if (globalThis?._PL_?.items?.[itemKey]) {
       // @ts-ignore
-      const Comp = globalThis?._PL_?.items?.[itemKey]();
+      const Comp = globalThis?._PL_?.items?.[itemKey](params.dependencies);
       return Comp(props);
     }
 

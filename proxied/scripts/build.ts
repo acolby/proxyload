@@ -2,9 +2,9 @@ import build from "../../src/build";
 import barrel from "../../src/barrel";
 import typegen from "../../src/typegen";
 
-const GLOBALS = {
-  "react/jsx-runtime": "JSX",
-  react: "React",
+const dependencies = {
+  "react/jsx-runtime": {},
+  react: {},
 };
 
 async function main() {
@@ -29,8 +29,8 @@ async function main() {
     dir,
     dist,
     key: "latest",
-    globals: GLOBALS,
-    proxy: "@proxied",
+    dependencies,
+    proxyRef: "@proxied",
     loaders: {
       Component: "Loader/Component/default",
     },
