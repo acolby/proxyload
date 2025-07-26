@@ -2,7 +2,7 @@
 
 **Proxyload** is a structural standard and toolkit for organizing, typing, versioning, and deploying modular TypeScript code at scale.
 
-This standard flips the paradigm of how large projects are managed by simplifying and standardizing build-time artifacts, while allowing for customizable runtime loaders.
+This standard flips the paradigm of how large projects are managed by simplifying and standardizing build-time artifacts, while allowing for customizable runtime loaders with dependency injection.
 
 ## 📁 Using Proxyload
 
@@ -10,7 +10,7 @@ Once a project is Proxyloaded, code is consumed via a recursive proxy object as 
 
 ```tsx
 // src/Component/Landing/default/index.tsx
-import { Component } from '@proxyloaded';
+import { Component } from '@proxied';
 
 const Landing = () => {
   return (
@@ -25,7 +25,7 @@ const Landing = () => {
 export default Landing;
 ```
 
-There is no tree-shaking here. Instead, `Component` is dynamically swapped at runtime and proxy loaded. Instead of relying on complex bundlers and static analyzers, custom runtime loaders selectively pull in code as needed.
+There is no tree-shaking here. Instead, `Component` is dynamically swapped at runtime and proxy loaded. Instead of relying on complex bundlers and static analyzers, custom runtime loaders selectively pull in code as needed using dependency injection.
 
 ## 🤯 Why?!
 
@@ -36,6 +36,7 @@ This approach unlocks powerful runtime capabilities:
 - Manifest-based deploys
 - Extremely fast builds (no fancy bundling, every item acts as its own entrypoint)
 - Injectable middleware for various code types
+- **Dependency Injection**: Runtime dependency injection for better testability and flexibility
 
 ## ⚙️ How it Works
 
@@ -98,6 +99,7 @@ Each `[VARIATION]` folder **must include** an `index.ts|tsx` that implements the
 ```tsx
 // src/Component/Button/default/index.tsx
 import type { Interface } from "../interface";
+import React from "react";
 
 const Button: Interface = (props) => {
   return <button onClick={props?.onClick}>{props.label}</button>;
@@ -116,9 +118,52 @@ Each entry point is expected to be built and output individually using the follo
 dist/items/[TYPE]/[NAME]/[VARIATION]/[VERSION].js
 ```
 
-Each build artifact is automatically assigned to the global namespace by the build utility. The build process creates a structured global object that organizes all your proxied code for runtime loading.
+Each build artifact is automatically wrapped in a dependency injection function by the build utility. The build process creates a structured global object that organizes all your proxied code for runtime loading with DI support.
 
 By default, the variation is `default` and the version is the esbuild version (can be overridden).
+
+### 🔧 Dependency Injection
+
+Proxyload uses dependency injection (DI) to pass dependencies to modules at runtime. This approach provides several benefits:
+
+- **Isolation**: Modules don't depend on global state
+- **Testability**: Dependencies can be easily mocked by passing different DI proxy objects
+- **Flexibility**: Different dependency versions can be injected at runtime
+- **Type Safety**: The DI proxy can be typed for better IDE support
+
+**How DI Works:**
+
+1. **Module Wrapping**: Each built module is wrapped in a function that receives `_DI_PROXY_` as a parameter
+2. **Import Rewriting**: ES6 imports are transformed to read from the DI proxy instead of global namespace
+3. **Runtime Injection**: Dependencies are injected at runtime through the proxy system
+
+**Example of DI Transformation:**
+
+```tsx
+// Original code
+import React from "react";
+import { jsx, jsxs } from "react/jsx-runtime";
+
+const Button = (props) => {
+  return <button onClick={props.onClick}>{props.label}</button>;
+};
+
+export default Button;
+```
+
+```js
+// Built output with DI
+globalThis._PL_.items["Component/Button/default/hash"] = (_DI_PROXY_) => {
+  var React = _DI_PROXY_["react"];
+  var { jsx, jsxs } = _DI_PROXY_["react/jsx-runtime"];
+
+  const Button = (props) => {
+    return jsx("button", { onClick: props.onClick, children: props.label });
+  };
+
+  return Button;
+};
+```
 
 ### 📦 Release Management
 
@@ -159,6 +204,7 @@ You can load any item dynamically using the `@acolby/proxyload/proxy` function. 
 - **Versioned**: All variations follow `items/[TYPE]/[NAME]/[VARIATION]/[VERSION].js`.
 - **Tooling-Oriented**: Auto-discoverable by ProxyLoad-compatible tools.
 - **Runtime-Interop**: Swappable at runtime if the contract is upheld.
+- **Dependency Injection**: Runtime DI for better testability and flexibility.
 
 ---
 
@@ -202,9 +248,9 @@ import { ProxiedTypes } from "./types/index";
 
 const Proxied = proxy<ProxiedTypes>({
   host: "http://localhost:3012",
-  globals: {
-    JSX: JSX,
-    React: React,
+  dependencies: {
+    react: React,
+    "react/jsx-runtime": JSX,
   },
 });
 
@@ -232,7 +278,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 ```
 
-This demonstrates how the host application can seamlessly use proxied components as if they were locally imported, while the actual implementation is loaded dynamically at runtime.
+This demonstrates how the host application can seamlessly use proxied components as if they were locally imported, while the actual implementation is loaded dynamically at runtime with dependency injection.
 
 ---
 
@@ -248,7 +294,7 @@ The load utility handles server-side loading of release manifests and preloading
 
 For detailed documentation on the proxy utility, see [src/proxy/README.md](src/proxy/README.md).
 
-The proxy utility creates a nested proxy structure for dynamically loading and executing code based on type and name hierarchies. It's the core mechanism that enables Proxyload's runtime code loading capabilities.
+The proxy utility creates a nested proxy structure for dynamically loading and executing code based on type and name hierarchies. It's the core mechanism that enables Proxyload's runtime code loading capabilities with dependency injection support.
 
 ## Build Utility
 
@@ -256,9 +302,19 @@ For detailed documentation on the build utility, see [src/build/README.md](src/b
 
 The build utility compiles your proxied code structure into individual JavaScript files that can be dynamically loaded at runtime. It uses esbuild under the hood and supports custom plugins and configuration options.
 
-**Import Rewriting:**
+**Dependency Injection:**
 
-When building, any import whose module specifier matches a key in the `globals` map will be rewritten to reference `globalThis.<GLOBAL>`. For example, `import React from "react";` becomes `var React = globalThis.React;` in the output. This enables runtime injection of dependencies.
+When building, any import whose module specifier matches a key in the `dependencies` map will be rewritten to read from `_DI_PROXY_` instead of global namespace. For example, `import React from "react";` becomes `var React = _DI_PROXY_["react"];` in the output. This enables runtime dependency injection.
+
+**Module Wrapping:**
+
+Each built module is wrapped in a function that receives `_DI_PROXY_` as a parameter, allowing for runtime dependency injection:
+
+```js
+globalThis._PL_.items["path/to/module"] = (_DI_PROXY_) => {
+  /* module code */
+};
+```
 
 **Versioning:**
 
@@ -273,7 +329,10 @@ import { cssModulesPlugin } from "esbuild-css-modules-plugin";
 await build({
   dir: "./src/proxied",
   dist: "./dist",
-  globals: { react: "React", "react/jsx-runtime": "JSX" },
+  dependencies: {
+    react: {},
+    "react/jsx-runtime": {},
+  },
   key: "v1.0.0", // Release key for this build
   plugins: [cssModulesPlugin()],
   esbuildOptions: {
