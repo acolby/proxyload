@@ -13,7 +13,7 @@ async function load(host: string, key: string): Promise<Release> {
       items: {},
       releases: {},
       current: "",
-      proxy: null,
+      namespace,
     };
   }
 
