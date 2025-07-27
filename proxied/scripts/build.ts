@@ -31,6 +31,7 @@ async function main() {
     key: "latest",
     dependencies,
     proxyRef: "@proxied",
+    namespace: "_VITE_PROXIED_",
     loaders: {
       Component: "Loader/Component/default",
     },

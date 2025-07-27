@@ -19,18 +19,24 @@ export async function getTargets(src: string) {
 
 export async function getCurrent(dist: string, targetName: string) {
   const manifestPath = path.join(dist, "manifests", targetName, "current.json");
-  const manifest = JSON.parse(
-    (await fs.readFile(manifestPath, "utf-8")) || "{}"
-  );
-  return manifest;
+  try {
+    const manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"));
+    return manifest;
+  } catch (error) {
+    // If file doesn't exist or is invalid JSON, return empty object
+    return {};
+  }
 }
 
 export async function getHistory(dist: string, targetName: string) {
   const manifestPath = path.join(dist, "manifests", targetName, "history.json");
-  const manifest = JSON.parse(
-    (await fs.readFile(manifestPath, "utf-8")) || "{}"
-  );
-  return manifest;
+  try {
+    const manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"));
+    return manifest;
+  } catch (error) {
+    // If file doesn't exist or is invalid JSON, return empty object
+    return {};
+  }
 }
 
 async function setRelease(
@@ -68,9 +74,15 @@ async function setRelease(
     targetName,
     "current.json"
   );
-  const currentData = JSON.parse(
-    (await fs.readFile(targetManifestPath, "utf-8")) || "{}"
-  );
+
+  // Get current data, create empty object if file doesn't exist
+  let currentData: Record<string, any> = {};
+  try {
+    currentData = JSON.parse(await fs.readFile(targetManifestPath, "utf-8"));
+  } catch (error) {
+    // File doesn't exist or is invalid JSON, start with empty object
+    currentData = {};
+  }
 
   // Update the current release for the environment
   currentData[environment] = {
@@ -84,9 +96,15 @@ async function setRelease(
 
   // Update the history.json file
   const historyPath = path.join(dist, "manifests", targetName, "history.json");
-  const historyData = JSON.parse(
-    (await fs.readFile(historyPath, "utf-8")) || "{}"
-  );
+
+  // Get history data, create empty object if file doesn't exist
+  let historyData: Record<string, any> = {};
+  try {
+    historyData = JSON.parse(await fs.readFile(historyPath, "utf-8"));
+  } catch (error) {
+    // File doesn't exist or is invalid JSON, start with empty object
+    historyData = {};
+  }
 
   if (!historyData[environment]) {
     historyData[environment] = { history: [] };

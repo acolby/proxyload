@@ -14,6 +14,8 @@ import { BuildParams, Release, ReleasesData } from "../types";
  * await build({
  *   dir: './src',
  *   dist: './dist',
+ *   ** The global namespace for the proxy use for shared state
+ *   namespace: 'ProxyLoaded',
  *   ** Override import statements that are passed in as dependencies at runtime
  *   dependencies: { 'react': { * left empty for now * } },
  *   plugins: [cssModulesPlugin()],
@@ -30,7 +32,6 @@ export default async function build(params: BuildParams) {
   // Ensure the dist directory exists
   fs.mkdirSync(params.dist, { recursive: true });
 
-  const namespace = "_PL_";
   const entryPoints = await _getEntryPoints(params);
 
   const hashes: Record<string, string> = {};
@@ -86,7 +87,7 @@ export default async function build(params: BuildParams) {
     );
 
     const ref = `${path.dirname(entryPoint)}/${hash}`;
-    code = `globalThis.${namespace}.items["${ref}"] = (_DI_PROXY_) => { ${code} };`;
+    code = `globalThis.${params.namespace}.items["${ref}"] = (_DI_PROXY_) => { ${code} };`;
 
     const dest = `${params.dist}/items/${ref}.js`;
     // write to dist making sure the dir exists
@@ -119,7 +120,7 @@ export default async function build(params: BuildParams) {
     hashes: hashes,
     loaders: loadersWithHash,
     dependencies: dependencies,
-    namespace,
+    namespace: params.namespace,
   };
 
   // --- Update top-level releases.json ---
@@ -151,8 +152,10 @@ export default async function build(params: BuildParams) {
   // write the server release entry
   fs.writeFileSync(
     path.resolve(params.dist, "releases", params.key, "server.js"),
-    `globalThis.${namespace} = globalThis.${namespace} || { items: {}, releases: {} };
-globalThis.${namespace}.releases["${params.key}"] = ${JSON.stringify(
+    `globalThis.${params.namespace} = globalThis.${
+      params.namespace
+    } || { items: {}, releases: {} };
+globalThis.${params.namespace}.releases["${params.key}"] = ${JSON.stringify(
       release,
       null,
       2
@@ -161,13 +164,15 @@ globalThis.${namespace}.releases["${params.key}"] = ${JSON.stringify(
   );
 
   // write the server release entry
-  let clientCode = `globalThis.${namespace} = globalThis.${namespace} || { items: {}, releases: {} };
-globalThis.${namespace}.releases["${params.key}"] = ${JSON.stringify(
+  let clientCode = `globalThis.${params.namespace} = globalThis.${
+    params.namespace
+  } || { items: {}, releases: {} };
+globalThis.${params.namespace}.releases["${params.key}"] = ${JSON.stringify(
     release,
     null,
     2
   )};
-globalThis.${namespace}.current = "${params.key}";
+globalThis.${params.namespace}.current = "${params.key}";
 `;
 
   for (const loader of Object.values(params.loaders)) {

@@ -30,6 +30,7 @@ export type BuildParams = {
   dist: string;
   dependencies: Record<string, { version?: string }>;
   proxyRef: string;
+  namespace: string;
   // the internal global reference to the proxy for example "@proxied"
   key: string;
   loaders: Record<string, string>;
@@ -54,6 +55,7 @@ export type ProxyParams<T = any> = {
   host: string;
   dependencies: Record<string, any>;
   proxyImport?: string;
+  namespace: string;
 };
 
 export type BarrelParams = {

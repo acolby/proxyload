@@ -11,6 +11,7 @@ const ProxiedLoaded = proxy<Proxied>({
     "react/jsx-runtime": JSX,
     react: React,
   },
+  namespace: "_VITE_PROXIED_",
   proxyImport: "@proxied",
 });
 

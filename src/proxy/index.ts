@@ -3,7 +3,7 @@ import { LoaderParams, ProxyParams, Release } from "../types";
 export default function proxy<T>(params: ProxyParams<T>) {
   const { host, proxyImport = "@proxied" } = params;
 
-  const namespace = "_PL_";
+  const namespace = params.namespace;
 
   // injected dependencies
   const dependencies = {
@@ -21,8 +21,8 @@ export default function proxy<T>(params: ProxyParams<T>) {
           {},
           {
             get: (target, name: string) => {
-              // get the current release key from the global namespace
-              const release_key = globalThis._PL_?.current;
+              // @ts-ignore
+              const release_key = globalThis[namespace]?.current;
               const release = getRelease(release_key);
 
               const loader_key = release.loaders?.[type];
@@ -53,7 +53,7 @@ export default function proxy<T>(params: ProxyParams<T>) {
                       type,
                       hash,
                       variation,
-                      namespace,
+                      namespace: namespace,
                       dependencies,
                     })(props);
                   })(props);
@@ -69,6 +69,7 @@ export default function proxy<T>(params: ProxyParams<T>) {
   );
 
   function getRelease(release_key: string): Release {
+    // @ts-ignore
     const release = globalThis?.[namespace]?.releases?.[release_key];
 
     if (!release) {
