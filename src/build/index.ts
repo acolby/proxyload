@@ -119,6 +119,7 @@ export default async function build(params: BuildParams) {
     hashes: hashes,
     loaders: loadersWithHash,
     dependencies: dependencies,
+    namespace,
   };
 
   // --- Update top-level releases.json ---

@@ -5,6 +5,7 @@ export type Release = {
   hashes: Record<string, string>;
   loaders: Record<string, string>;
   dependencies: Record<string, { version?: string }>;
+  namespace: string;
   createdAt?: string;
   updatedAt?: string;
 };
